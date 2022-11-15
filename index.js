@@ -1,3 +1,4 @@
+import { Laser } from './classes/Laser.js';
 import Ship from './classes/Ship.js'
 
 /** @type { HTMLCanvasElement } */
@@ -5,10 +6,16 @@ const canvas = document.getElementById('game');
 const context = canvas.getContext('2d')
 
 const ship = new Ship(canvas)
+const lasers = []
 
 const draw = () => {
   context.clearRect(0, 0, canvas.width, canvas.height)
   ship.draw()
+  lasers.forEach(laser => laser.draw())
+}
+
+const update = () => {
+  lasers.forEach(laser => laser.update())
 }
 
 
@@ -32,21 +39,28 @@ window.onload = () => {
     }
 
     if (e.key === 'ArrowUp') {
+      lasers.push(new Laser(canvas, 'top'))
       ship.shoot('top')
     }
 
     if (e.key === 'ArrowDown') {
+      lasers.push(new Laser(canvas, 'bottom'))
       ship.shoot('bottom')
     }
 
     if (e.key === 'ArrowLeft') {
+      lasers.push(new Laser(canvas, 'left'))
       ship.shoot('left')
     }
 
     if (e.key === 'ArrowRight') {
+      lasers.push(new Laser(canvas, 'right'))
       ship.shoot('right')
     }
   })
 
-  setInterval(() => draw(), 1000/60)
+  setInterval(() => {
+    draw()
+    update() },
+    1000/60)
 }
