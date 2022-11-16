@@ -1,3 +1,4 @@
+import { Fighter } from './classes/Fighter.js';
 import { Laser } from './classes/Laser.js';
 import Ship from './classes/Ship.js'
 
@@ -6,12 +7,18 @@ const canvas = document.getElementById('game');
 const context = canvas.getContext('2d')
 
 const ship = new Ship(canvas)
+let allowShoot = true
 const lasers = []
+
+
+const tempFighter = new Fighter(canvas, 'top')
 
 const draw = () => {
   context.clearRect(0, 0, canvas.width, canvas.height)
   ship.draw()
   lasers.forEach(laser => laser.draw())
+
+  tempFighter.draw()
 }
 
 const update = () => {
@@ -39,24 +46,33 @@ window.onload = () => {
     }
 
     if (e.key === 'ArrowUp') {
-      lasers.push(new Laser(canvas, 'top'))
-      ship.shoot('top')
+      if (!allowShoot || !ship.shoot('top')) return
+        lasers.push(new Laser(canvas, 'top'))
+        allowShoot = false
+      
     }
 
     if (e.key === 'ArrowDown') {
+      if (!allowShoot || !ship.shoot('bottom')) return
       lasers.push(new Laser(canvas, 'bottom'))
-      ship.shoot('bottom')
+      allowShoot = false
     }
 
     if (e.key === 'ArrowLeft') {
+      if (!allowShoot || !ship.shoot('left')) return
       lasers.push(new Laser(canvas, 'left'))
-      ship.shoot('left')
+      allowShoot = false
     }
 
     if (e.key === 'ArrowRight') {
+      if (!allowShoot || !ship.shoot('right')) return
       lasers.push(new Laser(canvas, 'right'))
-      ship.shoot('right')
+      allowShoot = false
     }
+
+    document.addEventListener('keyup', (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) allowShoot = true
+    })
   })
 
   setInterval(() => {

@@ -1,8 +1,10 @@
 export class Laser {
+  static counter = 0
   static context
   static laserSprite = '../images/laserSprite.png'
 
   #laserImage = new Image()
+  #id
   #position
   #xPosition = 0
   #yPosition = 0
@@ -13,8 +15,9 @@ export class Laser {
    */
   constructor(canvas, position) {
     Laser.context = canvas.getContext('2d')
-    
 
+    this.#id = Laser.counter
+    Laser.counter = Laser.counter + 1
 
     this.#position = position
     this.#laserImage.src = Laser.laserSprite
@@ -29,12 +32,12 @@ export class Laser {
         this.#yPosition = 430
         break
       case 'left':
-        this.#xPosition = -5
-        this.#yPosition = 90
+        this.#xPosition = 370
+        this.#yPosition = 335
         break
       case 'right':
-        this.#xPosition = -5
-        this.#yPosition = -120
+        this.#xPosition = 580
+        this.#yPosition = 335
         break
       default:
         break
@@ -50,10 +53,10 @@ export class Laser {
         this.#yPosition = this.#yPosition + 10
         break
       case 'left':
-        this.#yPosition = this.#yPosition + 10
+        this.#xPosition = this.#xPosition - 10
         break
       case 'right':
-        this.#yPosition = this.#yPosition - 10
+        this.#xPosition = this.#xPosition + 10
       default:
         break
     }
@@ -61,12 +64,9 @@ export class Laser {
 
   draw() {
     if (this.#position === 'left' || this.#position === 'right') {
-      Laser.context.translate(980 / 2, 680 / 2)
-      Laser.context.rotate(90 * Math.PI/180)
-      Laser.context.drawImage(this.#laserImage, this.#xPosition, this.#yPosition, 10, 30)
-      Laser.context.resetTransform()
+      Laser.context.drawImage(this.#laserImage, 0, 300, 300, 100, this.#xPosition, this.#yPosition, 30, 10)
     } else {
-      Laser.context.drawImage(this.#laserImage, this.#xPosition, this.#yPosition, 10, 30)
+      Laser.context.drawImage(this.#laserImage, 0, 0, 100, 300, this.#xPosition, this.#yPosition, 10, 30)
     }
   }
 }

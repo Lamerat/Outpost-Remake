@@ -111,7 +111,6 @@ class Ship {
     } else {
       Ship.orbAnimationX = Ship.orbAnimationX + 100
     }
-  
   }
 
   static drawLightnings() {
@@ -207,8 +206,10 @@ class Ship {
    * @param { 'left' | 'right' | 'top' | 'bottom' } position 
    */
   shoot(position) {
-    if (Ship.corpusCondition[position] === false) return
+    if (Ship.corpusCondition[position] === false) return false
+    if (Ship.shield === position) Ship.shield = 'none'
     Ship.cannon = position
+    return true
   }
 
 
