@@ -9,6 +9,14 @@ export class Laser {
   #xPosition = 0
   #yPosition = 0
 
+  get id () {
+    return this.#id
+  }
+
+  get coordinates () {
+    return { position: this.#position, x: this.#xPosition, y: this.#yPosition }
+  }
+
   /**
    * @param  {HTMLCanvasElement } canvas
    * @param { 'left' | 'right' | 'top' | 'bottom' } position
@@ -16,8 +24,8 @@ export class Laser {
   constructor(canvas, position) {
     Laser.context = canvas.getContext('2d')
 
-    this.#id = Laser.counter
     Laser.counter = Laser.counter + 1
+    this.#id = Laser.counter
 
     this.#position = position
     this.#laserImage.src = Laser.laserSprite

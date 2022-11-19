@@ -43,17 +43,13 @@ class Ship {
 
   /** @type { 'none' | 'left' | 'right' | 'top' | 'bottom' } */
   static shield = 'none'
-  static energy = 0
+  static energy = 100
 
   /** @type { 'none' | 'left' | 'right' | 'top' | 'bottom' } */
   static cannon = 'none'
   static heat = 0
 
   static context
-
-  // get energy() {
-  //   return Ship.energy
-  // }
 
   /**
    * @param  {HTMLCanvasElement } canvas 
@@ -124,7 +120,6 @@ class Ship {
     Ship.lightingAnimation < 224
       ? Ship.lightingAnimation = Ship.lightingAnimation + 32
       : Ship.lightingAnimation = 0
-    
   
     Ship.context.rotate(45 * Math.PI / 180)
     Ship.context.scale(0.15, 0.15)
@@ -138,16 +133,18 @@ class Ship {
     Ship.context.resetTransform()
   }
 
+
   static shieldFrames() {
     Ship.shieldAnimation < 850
       ? Ship.shieldAnimation = Ship.shieldAnimation + 85
       : Ship.shieldAnimation = 0
   }
 
+
   static drawShield() {
     switch (Ship.shield) {
       case 'left':
-        Ship.context.translate(Ship.canvasWidth / 2, Ship.canvasHeight / 2);      
+        Ship.context.translate(Ship.canvasWidth / 2, Ship.canvasHeight / 2)      
         Ship.context.rotate(180*Math.PI/180)
         Ship.context.drawImage(Ship.shieldImage, Ship.shieldAnimation, 0, 85, 330, 90, -110, 57, 220)
         Ship.context.resetTransform()
@@ -203,8 +200,8 @@ class Ship {
   }
 
   static updateShield() {
-    if (Ship.energy < 100) {
-      Ship.energy = Ship.energy + 5
+    if (Ship.energy < 100 && Ship.shield === 'none') {
+      Ship.energy = Ship.energy + 1
     }
   }
 
@@ -236,6 +233,10 @@ class Ship {
   }
 
   
+  shieldDamage() {
+    Ship.shield = 'none'
+    Ship.energy = Ship.energy - 20
+  }
 
 
   draw() {

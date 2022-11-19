@@ -1,4 +1,4 @@
-export class Star {
+class Star {
   static context
   static sprite = '../images/star.png'
   static starImage = new Image()
@@ -35,3 +35,5 @@ export class Star {
     }
   }
 }
+
+export default Star
