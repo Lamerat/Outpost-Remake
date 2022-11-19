@@ -43,13 +43,17 @@ class Ship {
 
   /** @type { 'none' | 'left' | 'right' | 'top' | 'bottom' } */
   static shield = 'none'
-  static energy = 1000
+  static energy = 0
 
   /** @type { 'none' | 'left' | 'right' | 'top' | 'bottom' } */
   static cannon = 'none'
   static heat = 0
 
   static context
+
+  // get energy() {
+  //   return Ship.energy
+  // }
 
   /**
    * @param  {HTMLCanvasElement } canvas 
@@ -74,6 +78,9 @@ class Ship {
     setInterval(() => Ship.drawCore(), 100)
     setInterval(() => Ship.drawPowerOrbs(), 100)
     setInterval(() => Ship.shieldFrames(), 20)
+
+    setInterval(() => Ship.updateHeat(), 400)
+    setInterval(() => Ship.updateShield(), 200)
   }
 
   static drawBase() {
@@ -189,12 +196,25 @@ class Ship {
   }
 
 
+  static updateHeat() {
+    if (Ship.heat > 0) {
+      Ship.heat = Ship.heat - 5
+    }
+  }
+
+  static updateShield() {
+    if (Ship.energy < 100) {
+      Ship.energy = Ship.energy + 5
+    }
+  }
+
+
   /**
    * Set shield active
    * @param { 'left' | 'right' | 'top' | 'bottom' } position 
    */
   createShield(position) {
-    if (Ship.energy < 200) {
+    if (Ship.energy < 20) {
       console.log('not enough energy')
     }
 
@@ -207,10 +227,15 @@ class Ship {
    */
   shoot(position) {
     if (Ship.corpusCondition[position] === false) return false
+    if (Ship.heat >= 100) return false
     if (Ship.shield === position) Ship.shield = 'none'
+
+    Ship.heat = Ship.heat + 10
     Ship.cannon = position
     return true
   }
+
+  
 
 
   draw() {

@@ -1,5 +1,6 @@
 import { Bomb } from './classes/Bomb.js';
 import { Fighter } from './classes/Fighter.js';
+import { Hud } from './classes/Hud.js';
 import { Laser } from './classes/Laser.js';
 import Ship from './classes/Ship.js'
 
@@ -15,6 +16,8 @@ const lasers = []
 const tempFighter = new Fighter(canvas, 'top')
 const tempBomb = new Bomb(canvas, 'top')
 
+const hud = new Hud(canvas)
+
 const draw = () => {
   context.clearRect(0, 0, canvas.width, canvas.height)
   ship.draw()
@@ -22,6 +25,7 @@ const draw = () => {
 
   tempFighter.draw()
   tempBomb.draw()
+  hud.draw(Ship.energy, Ship.heat)
 }
 
 const update = () => {
