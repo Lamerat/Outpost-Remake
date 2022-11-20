@@ -12,6 +12,7 @@ class Explosion {
   #positionX
   #positionY
   #id
+  #animationInterval
 
   get id () {
     return this.#id
@@ -39,10 +40,10 @@ class Explosion {
     this.#positionX = coordinates.x
     this.#positionY = coordinates.y
     
-    this.#sound.volume = 0.4
+    this.#sound.volume = 0.2
     // this.#sound.play()
     
-    setInterval(() => this.animation(), 100)
+    this.#animationInterval = setInterval(() => this.animation(), 100)
   }
 
   draw() {
@@ -51,6 +52,7 @@ class Explosion {
 
   animation() {
     if (this.#animationX === 1200) {
+      clearInterval(this.#animationInterval)
       Explosion.clearFunction(this.#id)
     } else {
       this.#animationX = this.#animationX + 200

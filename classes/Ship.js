@@ -8,6 +8,7 @@ class Ship {
   static lightingSprite = '../images/colorLightning.png'
   static shieldSprite = '../images/shieldSprites.png'
   static cannonSprite = '../images/cannons.png'
+  static sideSprite = '../images/sideParts.png'
   static orbsSprite = {
     blue: '../images/blueOrb.png',
     magenta: '../images/magentaOrb.png',
@@ -22,6 +23,7 @@ class Ship {
   static lightingImage = new Image()
   static shieldImage = new Image()
   static cannonImage = new Image()
+  static sideImage = new Image()
   static orbs = {
     blue: new Image(),
     magenta: new Image(),
@@ -69,6 +71,8 @@ class Ship {
     Ship.lightingImage.src = Ship.lightingSprite
     Ship.shieldImage.src = Ship.shieldSprite
     Ship.cannonImage.src = Ship.cannonSprite
+    Ship.sideImage.src = Ship.sideSprite
+    
     Object.keys(Ship.orbs).forEach(key => Ship.orbs[key].src = Ship.orbsSprite[key])
 
     setInterval(() => Ship.drawCore(), 100)
@@ -80,6 +84,17 @@ class Ship {
   }
 
   static drawBase() {
+    const leftImgCoordinates =Ship.corpusCondition.left === false ? 0 : 172
+    const rightImgCoordinates =Ship.corpusCondition.right === false ? 0 : 172
+    const topImgCoordinates = Ship.corpusCondition.top === false ? 0 : 172
+    const bottomImgCoordinates = Ship.corpusCondition.bottom === false ? 0 : 172
+    
+    Ship.context.drawImage(Ship.sideImage, leftImgCoordinates, 0, 172, 172, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
+    Ship.context.drawImage(Ship.sideImage, rightImgCoordinates, 172, 172, 172, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
+    Ship.context.drawImage(Ship.sideImage, topImgCoordinates, 344, 172, 172, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
+    Ship.context.drawImage(Ship.sideImage, bottomImgCoordinates, 516, 172, 172, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
+    
+    
     Ship.context.drawImage(Ship.baseImage, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
   }
 
@@ -232,10 +247,19 @@ class Ship {
     return true
   }
 
-  
+
   shieldDamage() {
     Ship.shield = 'none'
     Ship.energy = Ship.energy - 20
+  }
+
+
+  /**
+   * Set shoot position
+   * @param { 'left' | 'right' | 'top' | 'bottom' } side 
+   */
+  corpusDamage(side) {
+    Ship.corpusCondition[side] = false
   }
 
 

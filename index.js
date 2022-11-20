@@ -164,6 +164,7 @@ const update = () => {
         clearBomb(bomb.id)
         bomb.destroy()
         explosions.push(new Explosion(canvas, explosionCoordinates.shipLeft, 'normal', clearExplosion))
+        ship.corpusDamage('left')
       }
     }
 
@@ -188,6 +189,7 @@ const update = () => {
         clearBomb(bomb.id)
         bomb.destroy()
         explosions.push(new Explosion(canvas, explosionCoordinates.shipRight, 'normal', clearExplosion))
+        ship.corpusDamage('right')
       }
     }
 
@@ -212,6 +214,7 @@ const update = () => {
         clearBomb(bomb.id)
         bomb.destroy()
         explosions.push(new Explosion(canvas, explosionCoordinates.shipTop, 'normal', clearExplosion))
+        ship.corpusDamage('top')
       }
     }
 
@@ -237,6 +240,7 @@ const update = () => {
         clearBomb(bomb.id)
         bomb.destroy()
         explosions.push(new Explosion(canvas, explosionCoordinates.shipBottom, 'normal', clearExplosion))
+        ship.corpusDamage('bottom')
       }
     }
 
