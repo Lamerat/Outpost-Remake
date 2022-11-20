@@ -202,7 +202,6 @@ const update = () => {
       })
 
       if (Ship.shield === position && y >= 195 && y <= 210) {
-        clearInterval(temp)
         clearBomb(bomb.id)
         bomb.destroy()
         explosions.push(new Explosion(canvas, explosionCoordinates.shieldTop, 'small', clearExplosion))

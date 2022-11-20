@@ -26,7 +26,7 @@ class Hud {
   draw(energy = 100, heat = 10) {
     Hud.context.beginPath()
     Hud.context.rect(798, 625, (153/100) * energy, 15)
-    Hud.context.fillStyle = '#00FFFF'
+    Hud.context.fillStyle = energy >= 20 ? '#00FFFF' : 'red'
     Hud.context.fill()
 
     Hud.context.beginPath()
