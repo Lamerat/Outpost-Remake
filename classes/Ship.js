@@ -208,11 +208,11 @@ class Ship {
 
   /**
    * Set shield active
-   * @param { 'left' | 'right' | 'top' | 'bottom' } position 
+   * @param { 'left' | 'right' | 'top' | 'bottom' | 'none' } position 
    */
   createShield(position) {
-    if (Ship.energy < 20) {
-      console.log('not enough energy')
+    if (Ship.energy < 20 && position !== 'none') {
+      return
     }
 
     Ship.shield = position

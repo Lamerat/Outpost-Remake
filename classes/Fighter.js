@@ -1,4 +1,4 @@
-export class Fighter {
+class Fighter {
   static context
   static fighterSprite = '../images/spaceShipSprites.png'
   static fighterImage = new Image()
@@ -9,6 +9,8 @@ export class Fighter {
   #animationY = 0
   #currentAnimation
   #position
+  #animationInterval
+  #shootTimeout
 
 
   /**
@@ -26,7 +28,7 @@ export class Fighter {
     this.#position = position
     this.#currentAnimation = this.arrive
 
-    setInterval(() => this.#currentAnimation(), 60)
+    this.#animationInterval = setInterval(() => this.#currentAnimation(), 60)
 
     this.shootTimer()
   }
@@ -46,7 +48,7 @@ export class Fighter {
     }
 
     const timeForShoot = Math.floor(Math.random() * (maxShootWait - minShootWait) + minShootWait)
-    setTimeout(() => { this.#animationX = 0; this.#currentAnimation = this.shoot }, timeForShoot)
+    this.#shootTimeout = setTimeout(() => { this.#animationX = 0; this.#currentAnimation = this.shoot }, timeForShoot)
   }
 
 
@@ -116,4 +118,11 @@ export class Fighter {
       this.#animationX = this.#animationX + 350
     }
   }
+
+  destroy() {
+    clearInterval(this.#animationInterval)
+    clearTimeout(this.#shootTimeout)
+  }
 }
+
+export default Fighter

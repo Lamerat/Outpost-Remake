@@ -1,8 +1,9 @@
-export class Laser {
+class Laser {
   static counter = 0
   static context
   static laserSprite = '../images/laserSprite.png'
 
+  #sound = new Audio('../sounds/laser.mp3')
   #laserImage = new Image()
   #id
   #position
@@ -26,6 +27,9 @@ export class Laser {
 
     Laser.counter = Laser.counter + 1
     this.#id = Laser.counter
+
+    this.#sound.volume = 0.1
+    this.#sound.play()
 
     this.#position = position
     this.#laserImage.src = Laser.laserSprite
@@ -78,3 +82,5 @@ export class Laser {
     }
   }
 }
+
+export default Laser

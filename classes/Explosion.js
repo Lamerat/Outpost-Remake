@@ -1,10 +1,11 @@
-export class Explosion {
+class Explosion {
   static counter = 0
   static context
   static sprite = '../images/explosion.png'
   static explosionImage = new Image()
   static clearFunction
 
+  #sound = new Audio('../sounds/explosion2.mp3')
   #animationX = 0
   #explosionWidth = 100   // default for normal
   #explosionHeight = 100  // default for normal
@@ -12,7 +13,7 @@ export class Explosion {
   #positionY
   #id
 
-  get id() {
+  get id () {
     return this.#id
   }
 
@@ -38,6 +39,9 @@ export class Explosion {
     this.#positionX = coordinates.x
     this.#positionY = coordinates.y
     
+    this.#sound.volume = 0.4
+    // this.#sound.play()
+    
     setInterval(() => this.animation(), 100)
   }
 
@@ -53,3 +57,5 @@ export class Explosion {
     }
   }
 }
+
+export default Explosion

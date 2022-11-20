@@ -1,4 +1,4 @@
-export class Bomb {
+class Bomb {
   static counter = 0
   static context
   static bombSprite = '../images/enemyBombSprite.png'
@@ -11,6 +11,7 @@ export class Bomb {
   #yPosition = 0
   #position
   #id
+  #animationInterval
 
   get id() {
     return this.#id
@@ -53,7 +54,7 @@ export class Bomb {
         break
     }
 
-    setInterval(() => this.animation(), 20)
+    this.#animationInterval = setInterval(() => this.animation(), 20)
   }
 
   draw() {
@@ -92,4 +93,10 @@ export class Bomb {
         break
     }
   }
+
+  destroy() {
+    clearInterval(this.#animationInterval)
+  }
 }
+
+export default Bomb
