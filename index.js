@@ -11,6 +11,7 @@ import { explosionCoordinates } from './common/constants.js'
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d')
 
+const shipScore = 200
 let allowShoot = true
 let level = 1
 let score = 0
@@ -58,6 +59,14 @@ enemies.top = new Fighter(canvas, 'top', level, addBomb, enemies)
 enemies.bottom = new Fighter(canvas, 'bottom', level, addBomb, enemies)
 
 
+const destroyEnemy = (position, laserId, explosion) => {
+  enemies[position].destroy()
+  enemies[position] = null
+  explosions.push(new Explosion(canvas, explosion, 'normal', clearExplosion))
+  clearLaser(laserId)
+  score = score + shipScore
+  shipsRemaining = shipsRemaining - 1
+}
 
 
 // Draw all elements
@@ -87,10 +96,7 @@ const update = () => {
 
     if (position === 'left') {      
       if (enemies.left && x < 77) {
-        enemies.left.destroy()
-        enemies.left = null
-        explosions.push(new Explosion(canvas, explosionCoordinates.enemyLeft, 'normal', clearExplosion))
-        clearLaser(laser.id)
+        destroyEnemy(position, laser.id, explosionCoordinates.enemyLeft)
       }
 
       if (x + 30 < 0) {
@@ -100,10 +106,7 @@ const update = () => {
 
     if (position === 'right') {      
       if (enemies.right && x > 873) {
-        enemies.right.destroy()
-        enemies.right = null
-        explosions.push(new Explosion(canvas, explosionCoordinates.enemyRight, 'normal', clearExplosion))
-        clearLaser(laser.id)
+        destroyEnemy(position, laser.id, explosionCoordinates.enemyRight)
       }
 
       if (x > 980) {
@@ -113,10 +116,7 @@ const update = () => {
 
     if (position === 'top') {
       if (enemies.top && y < 77) {
-        enemies.top.destroy()
-        enemies.top = null
-        explosions.push(new Explosion(canvas, explosionCoordinates.enemyTop, 'normal', clearExplosion))
-        clearLaser(laser.id)
+        destroyEnemy(position, laser.id, explosionCoordinates.enemyTop)
       }
 
       if (y + 30 < 0) {
@@ -126,10 +126,7 @@ const update = () => {
 
     if (position === 'bottom') {
       if (enemies.bottom && y > 573) {
-        enemies.bottom.destroy()
-        enemies.bottom = null
-        explosions.push(new Explosion(canvas, explosionCoordinates.enemyBottom, 'normal', clearExplosion))
-        clearLaser(laser.id)
+        destroyEnemy(position, laser.id, explosionCoordinates.enemyBottom)
       }
 
       if (y > 680) {
@@ -221,7 +218,6 @@ const update = () => {
     if (position === 'bottom') {
       lasers.filter(laser => laser.coordinates.position === 'bottom').forEach(current => {
         if (current.coordinates.y >= y - 15 ) {
-          clearInterval(temp)
           explosions.push(new Explosion(canvas, { x: 460, y: y }, 'small', clearExplosion))
           clearBomb(bomb.id)
           bomb.destroy()
