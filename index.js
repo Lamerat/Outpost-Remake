@@ -52,10 +52,10 @@ const clearBomb = (bombId) => bombs = bombs.filter(bomb => bomb.id !== bombId)
 const clearLaser = (laserId) => lasers = lasers.filter(laser => laser.id !== laserId)
 
 
-enemies.left = new Fighter(canvas, 'left', level, addBomb)
-enemies.right = new Fighter(canvas, 'right', level, addBomb)
-enemies.top = new Fighter(canvas, 'top', level, addBomb)
-enemies.bottom = new Fighter(canvas, 'bottom', level, addBomb)
+enemies.left = new Fighter(canvas, 'left', level, addBomb, enemies)
+enemies.right = new Fighter(canvas, 'right', level, addBomb, enemies)
+enemies.top = new Fighter(canvas, 'top', level, addBomb, enemies)
+enemies.bottom = new Fighter(canvas, 'bottom', level, addBomb, enemies)
 
 
 

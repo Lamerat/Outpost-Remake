@@ -1,6 +1,6 @@
 class Fighter {
   static context
-  static fighterSprite = '../images/spaceShipSprites.png'
+  static fighterSprite = { first: '../images/spaceShipSprites.png', second: '../images/spaceShipSprites2.png'}
   static fighterImage = new Image()
   static shootFunc
   static gameLevel
@@ -11,6 +11,7 @@ class Fighter {
   #position
   #animationInterval
   #shootTimeout
+  #removeTimeout
 
 
   /**
@@ -18,10 +19,12 @@ class Fighter {
    * @param { 'left' | 'right' | 'top' | 'bottom' } position
    * @param { number } gameLevel
    * @param { Function } shootFunc
+   * @param { object } positionObject
    */
-  constructor(canvas, position, gameLevel, shootFunc) {
+  constructor(canvas, position, gameLevel, shootFunc, positionObject) {
     Fighter.context = canvas.getContext('2d')
-    Fighter.fighterImage.src = Fighter.fighterSprite
+
+    Fighter.fighterImage.src = gameLevel <= 10 ? Fighter.fighterSprite.first : Fighter.fighterSprite.second
     Fighter.gameLevel = gameLevel
     Fighter.shootFunc = shootFunc
 
@@ -29,6 +32,12 @@ class Fighter {
     this.#currentAnimation = this.arrive
 
     this.#animationInterval = setInterval(() => this.#currentAnimation(), 60)
+
+    const timeForStay = Math.floor(Math.random() * (30 - 15) + 15)
+    this.#removeTimeout = setTimeout(() => {
+      positionObject[position] = null
+      this.destroy()
+    }, timeForStay * 1000)
 
     this.shootTimer()
   }
@@ -39,12 +48,30 @@ class Fighter {
     let minShootWait
     switch (Fighter.gameLevel) {
       case 1:
-        maxShootWait = 10000
-        minShootWait = 3000
+        maxShootWait = 30_000
+        minShootWait = 10_000
         break;
-    
+      case 2:
+        maxShootWait = 28_000
+        minShootWait = 8_000
+        break
+      case 3:
+        maxShootWait = 26_000
+        minShootWait = 6_000
+        break
+      case 4:
+        maxShootWait = 24_000
+        minShootWait = 5_000
+        break
+      case 5:
+        maxShootWait = 22_000
+        minShootWait = 4_000
+      case 6:
+        maxShootWait = 20_000
+        minShootWait = 4_000
+        break
       default:
-        break;
+        break
     }
 
     const timeForShoot = Math.floor(Math.random() * (maxShootWait - minShootWait) + minShootWait)
@@ -122,6 +149,7 @@ class Fighter {
   destroy() {
     clearInterval(this.#animationInterval)
     clearTimeout(this.#shootTimeout)
+    clearTimeout(this.#removeTimeout)
   }
 }
 

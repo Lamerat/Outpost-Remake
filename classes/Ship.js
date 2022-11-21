@@ -260,6 +260,7 @@ class Ship {
    */
   corpusDamage(side) {
     Ship.corpusCondition[side] = false
+    if (Ship.cannon === side) Ship.cannon = 'none'
   }
 
 
