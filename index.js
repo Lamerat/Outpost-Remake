@@ -16,14 +16,12 @@ let allowShoot = true
 let level = 1
 let score = 0
 let shipsRemaining = 16
+let shipsPlaced = 16
 
 /**@type { { left: Fighter, right: Fighter, top: Fighter, bottom: Fighter } } */
-const enemies = {
-  left: null,
-  right: null,
-  top: null,
-  bottom: null
-}
+const enemies = { left: null, right: null, top: null, bottom: null }
+const freePositions = { left: true, right: true, top: true, bottom: true }
+
 
 const stars = []
 const ship = new Ship(canvas)
@@ -52,21 +50,42 @@ const clearExplosion = (explosionId) => explosions = explosions.filter(explosion
 const clearBomb = (bombId) => bombs = bombs.filter(bomb => bomb.id !== bombId)
 const clearLaser = (laserId) => lasers = lasers.filter(laser => laser.id !== laserId)
 
-
-enemies.left = new Fighter(canvas, 'left', level, addBomb, enemies)
-enemies.right = new Fighter(canvas, 'right', level, addBomb, enemies)
-enemies.top = new Fighter(canvas, 'top', level, addBomb, enemies)
-enemies.bottom = new Fighter(canvas, 'bottom', level, addBomb, enemies)
-
-
-const destroyEnemy = (position, laserId, explosion) => {
-  enemies[position].destroy()
+const clearEnemy = (position) => {
   enemies[position] = null
-  explosions.push(new Explosion(canvas, explosion, 'normal', clearExplosion))
+  shipsRemaining = shipsRemaining - 1
+  setTimeout(() => freePositions[position] = true)
+
+  if (shipsRemaining === 0) {
+    console.log('level completed')
+    level++
+    shipsPlaced = 16
+    shipsRemaining = 16
+  }
+}
+
+const destroyEnemy = (position, laserId) => {
+  enemies[position].destroy()
   clearLaser(laserId)
   score = score + shipScore
-  shipsRemaining = shipsRemaining - 1
 }
+
+const createEnemyShip = () => {
+  const pos = Object.keys(freePositions).map(x => freePositions[x] ? x : null).filter(s => s)
+  
+  if (pos.length && shipsPlaced > 0) {
+    const randomIndex = Math.floor(Math.random() * (pos.length))
+    const side = pos[randomIndex]
+    enemies[side] = new Fighter(canvas, side, level, addBomb, clearEnemy)
+    freePositions[side] = false
+    shipsPlaced = shipsPlaced - 1
+  }
+  
+  const nextCall = Math.floor(Math.random() * (1000 - 500) + 500)
+  
+  setTimeout(() => createEnemyShip(), nextCall)
+}
+
+
 
 
 // Draw all elements
@@ -77,6 +96,7 @@ const draw = () => {
   context.fillStyle = 'gray'
   context.fillText(`LEVEL: ${level}`, 10, 25)
   context.fillText(`SCORE: ${score}`, 10, 45)
+  context.fillText(`REMAINING ENEMIES: ${shipsRemaining}`, 10, 65)
 
   ship.draw()
   lasers.forEach(laser => laser.draw())
@@ -94,7 +114,7 @@ const update = () => {
   lasers.forEach(laser => {
     const { position, x, y } = laser.coordinates
 
-    if (position === 'left') {      
+    if (position === 'left') {
       if (enemies.left && x < 77) {
         destroyEnemy(position, laser.id, explosionCoordinates.enemyLeft)
       }
@@ -242,8 +262,6 @@ const update = () => {
 
     bomb.update()
   })
-
-
 }
 
 
@@ -314,8 +332,10 @@ window.onload = () => {
 
   temp = setInterval(() => {
     draw()
-    update() },
-    1000/60)
+    update()
+  }, 1000 / 60)
 
   setInterval(() => starsUpdate(), 1000)
+
+  setTimeout(() => createEnemyShip(), 1000)
 }

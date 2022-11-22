@@ -22,7 +22,7 @@ class Bomb {
   }
 
   /**
-   * @param  {HTMLCanvasElement } canvas
+   * @param { HTMLCanvasElement } canvas
    * @param { 'left' | 'right' | 'top' | 'bottom' } position
    */
   constructor(canvas, position) {

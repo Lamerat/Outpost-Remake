@@ -9,7 +9,7 @@ class Star {
   #animationY
 
   /**
-   * @param  {HTMLCanvasElement } canvas
+   * @param { HTMLCanvasElement } canvas
    */
   constructor(canvas, xPos, yPos) {
     Star.context = canvas.getContext('2d')

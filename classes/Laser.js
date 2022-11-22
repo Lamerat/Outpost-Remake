@@ -19,7 +19,7 @@ class Laser {
   }
 
   /**
-   * @param  {HTMLCanvasElement } canvas
+   * @param { HTMLCanvasElement } canvas
    * @param { 'left' | 'right' | 'top' | 'bottom' } position
    */
   constructor(canvas, position) {
@@ -29,7 +29,7 @@ class Laser {
     this.#id = Laser.counter
 
     this.#sound.volume = 0.1
-    this.#sound.play()
+    // this.#sound.play()
 
     this.#position = position
     this.#laserImage.src = Laser.laserSprite

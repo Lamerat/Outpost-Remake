@@ -54,7 +54,7 @@ class Ship {
   static context
 
   /**
-   * @param  {HTMLCanvasElement } canvas 
+   * @param { HTMLCanvasElement } canvas 
    */
   constructor(canvas) {
     if (Ship.#singleton) {
@@ -216,7 +216,7 @@ class Ship {
 
   static updateShield() {
     if (Ship.energy < 100 && Ship.shield === 'none') {
-      Ship.energy = Ship.energy + 1
+      Ship.energy = Ship.energy + 5
     }
   }
 
