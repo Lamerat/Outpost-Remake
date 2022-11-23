@@ -7,7 +7,8 @@ class Fighter {
   static shootFunc
   static gameLevel
   static clearFunc
-
+  
+  #explosionSound = new Audio('../sounds/explosion.wav')
   #animationX = 0
   #animationY = 0
   #currentAnimation
@@ -15,6 +16,7 @@ class Fighter {
   #animationInterval
   #shootTimeout
   #removeTimeout
+  #shootCount = 1
   #destroyed = false
 
 
@@ -39,7 +41,7 @@ class Fighter {
 
     this.#animationInterval = setInterval(() => this.#currentAnimation(), 60)
 
-    const timeForStay = Math.floor(Math.random() * (30 - 15) + 15)
+    const timeForStay = Math.floor(Math.random() * (20 - 10) + 10)
     this.#removeTimeout = setTimeout(() => {
       this.clean()
     }, timeForStay * 1000)
@@ -58,25 +60,25 @@ class Fighter {
         break;
       case 2:
         maxShootWait = 3_000
-        minShootWait = 1_500
+        minShootWait = 1_200
         break
       case 3:
         maxShootWait = 3_000
         minShootWait = 1_000
         break
       case 4:
-        maxShootWait = 3_300
+        maxShootWait = 2_500
         minShootWait = 1_000
         break
       case 5:
-        maxShootWait = 3_000
+        maxShootWait = 2_200
         minShootWait = 1_000
       case 6:
-        maxShootWait = 2_500
-        minShootWait = 500
+        maxShootWait = 2_000
+        minShootWait = 700
         break
       case 7:
-        maxShootWait = 2_000
+        maxShootWait = 1_700
         minShootWait = 500
         break
       case 8:
@@ -88,7 +90,7 @@ class Fighter {
         minShootWait = 500
         break
       case 10:
-        maxShootWait = 500
+        maxShootWait = 600
         minShootWait = 300
         break
       default:
@@ -96,7 +98,7 @@ class Fighter {
     }
 
     const timeForShoot = Math.floor(Math.random() * (maxShootWait - minShootWait) + minShootWait)
-    this.#shootTimeout = setTimeout(() => { this.#animationX = 0; this.#currentAnimation = this.shoot }, timeForShoot)
+    this.#shootTimeout = setTimeout(() => { this.#animationX = 0; this.#currentAnimation = this.shoot }, timeForShoot * this.#shootCount)
   }
 
 
@@ -170,6 +172,7 @@ class Fighter {
 
   shoot () {
     this.#animationY = 1350
+    this.#shootCount = this.#shootCount + 0.5
     if (this.#animationX === 3150) {
       this.#animationX = 0
       this.#currentAnimation = this.idle
@@ -184,6 +187,8 @@ class Fighter {
 
 
   explode () {
+    this.#explosionSound.volume = 0.2
+    // this.#explosionSound.play()
     if (this.#animationX === 1200) {
       clearInterval(this.#animationInterval)
       Fighter.clearFunc(this.#position)
@@ -196,6 +201,8 @@ class Fighter {
   destroy () {
     clearTimeout(this.#shootTimeout)
     clearTimeout(this.#removeTimeout)
+    clearInterval(this.#animationInterval)
+    this.#animationInterval = setInterval(() => this.#currentAnimation(), 100)
     this.#destroyed = true
     this.#currentAnimation = this.explode
     this.#animationX = 0
