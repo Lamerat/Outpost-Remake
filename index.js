@@ -71,16 +71,19 @@ const destroyEnemy = (position, laserId) => {
 
 const createEnemyShip = () => {
   const pos = Object.keys(freePositions).map(x => freePositions[x] ? x : null).filter(s => s)
-  
+
   if (pos.length && shipsPlaced > 0) {
-    const randomIndex = Math.floor(Math.random() * (pos.length))
-    const side = pos[randomIndex]
-    enemies[side] = new Fighter(canvas, side, level, addBomb, clearEnemy)
-    freePositions[side] = false
-    shipsPlaced = shipsPlaced - 1
+    if ((level < 3 && pos.length > 2) || (level >=3 && level < 7 && pos.length > 1) || level >= 7) {
+      const randomIndex = Math.floor(Math.random() * (pos.length))
+      const side = pos[randomIndex]
+      enemies[side] = new Fighter(canvas, side, level, addBomb, clearEnemy)
+      freePositions[side] = false
+      shipsPlaced = shipsPlaced - 1
+    } 
   }
-  
-  const nextCall = Math.floor(Math.random() * (1000 - 500) + 500)
+
+  const additionalTime = pos.length === 4 ? 4.5 : 4
+  const nextCall = Math.floor(Math.random() * (1500 - 500) + 500) * (additionalTime - pos.length)
   
   setTimeout(() => createEnemyShip(), nextCall)
 }

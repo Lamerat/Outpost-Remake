@@ -40,7 +40,7 @@ class Explosion {
     this.#positionX = coordinates.x
     this.#positionY = coordinates.y
     
-    this.#sound.volume = 0.2
+    this.#sound.volume = 0.1
     // this.#sound.play()
     
     this.#animationInterval = setInterval(() => this.animation(), 100)
