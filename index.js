@@ -23,7 +23,8 @@ let timeForSatellite = false
 /**@type { { left: Fighter, right: Fighter, top: Fighter, bottom: Fighter } } */
 const enemies = { left: null, right: null, top: null, bottom: null }
 const freePositions = { left: true, right: true, top: true, bottom: true }
-
+/**@type { Satellite } */
+let satellite = null
 
 const stars = []
 const ship = new Ship(canvas)
@@ -36,9 +37,6 @@ let lasers = []
 let bombs = []
 /** @type { Array<Explosion> } */
 let explosions = []
-
-
-const tempSat = new Satellite(canvas)
 
 
 // Create stars
@@ -55,6 +53,14 @@ const clearExplosion = (explosionId) => explosions = explosions.filter(explosion
 const clearBomb = (bombId) => bombs = bombs.filter(bomb => bomb.id !== bombId)
 const clearLaser = (laserId) => lasers = lasers.filter(laser => laser.id !== laserId)
 
+const satelliteCollision = (px, py, cx, cy, r) => {
+  const distX = px - cx
+  const distY = py - cy
+  const distance = Math.sqrt( (distX * distX) + (distY * distY) )
+
+  return distance <= r ? true : false
+}
+
 const clearEnemy = (position) => {
   enemies[position] = null
   shipsRemaining = shipsRemaining - 1
@@ -62,10 +68,9 @@ const clearEnemy = (position) => {
 
   if (shipsRemaining === 0) {
     console.log('level completed')
-    level++
-    shipsPlaced = 16
-    shipsRemaining = 16
+    
     timeForSatellite = true
+    setTimeout(() => satellite = new Satellite(canvas, changeLevel), 2000)
   }
 }
 
@@ -76,6 +81,8 @@ const destroyEnemy = (position, laserId) => {
 }
 
 const createEnemyShip = () => {
+  if (timeForSatellite) return
+
   const pos = Object.keys(freePositions).map(x => freePositions[x] ? x : null).filter(s => s)
 
   if (pos.length && shipsPlaced > 0) {
@@ -95,6 +102,14 @@ const createEnemyShip = () => {
 }
 
 
+const changeLevel = () => {
+  level++
+  shipsPlaced = 16
+  shipsRemaining = 16
+  timeForSatellite = false
+  satellite = null
+  setTimeout(() => createEnemyShip(), 1000)
+}
 
 
 // Draw all elements
@@ -112,11 +127,9 @@ const draw = () => {
   lasers.forEach(laser => laser.draw())
   bombs.forEach(bomb => bomb.draw())
 
-  if (timeForSatellite === false) {
-    Object.values(enemies).filter(x => x).forEach(fighter => fighter.draw())
-  } else {
-    tempSat.draw()
-  }
+  Object.values(enemies).filter(x => x).forEach(fighter => fighter.draw())
+
+  if (timeForSatellite && satellite) satellite.draw()
 
   explosions.forEach(explosion => explosion.draw())
 }
@@ -164,8 +177,19 @@ const update = () => {
       if (y > 680) {
         clearLaser(laser.id)
       }
+      
     }
 
+    if (timeForSatellite && satellite) {
+      const { x: satX, y: satY, r } = satellite.getCoordinates()
+      let laserX = x
+      let laserY = y
+      if (position === 'bottom') laserY = laserY + 30
+      if (position === 'right') laserX = laserX + 30
+      
+      if (satelliteCollision(laserX, laserY, satX, satY, r)) satellite.destroy()
+    }
+    
     laser.update()
   })
 

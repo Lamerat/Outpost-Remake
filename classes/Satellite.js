@@ -2,10 +2,14 @@ class Satellite {
   static context
   static mainSprite = '../images/satellite.png'
   static sphereSprite = '../images/satelliteSphere.png'
+  static explosionSprite = '../images/satelliteExplode.png'
   static mainImage = new Image()
   static sphereImage = new Image()
-  static lastAngle = 10
+  static explosionImage = new Image()
+  static lastAngle = 5
   static radius = 250
+  static importantAngles = [0, 90 , 180, 270]
+  static finishFunc
 
   #angle
   #coreInterval
@@ -14,6 +18,9 @@ class Satellite {
   #coreAnimationY = 0
   #mainAnimationX = 0
   #mainAnimationY = 0
+  #xPos
+  #yPos
+  #destroyed = false
 
   /**
    * Convert degrees to radians
@@ -25,31 +32,42 @@ class Satellite {
   }
 
   /**
-   * 
    * @param { HTMLCanvasElement } canvas 
+   * @param { Function } finishFunc
    */
-  constructor (canvas) {
+  constructor (canvas, finishFunc) {
     Satellite.context = canvas.getContext('2d')
     Satellite.mainImage.src = Satellite.mainSprite
     Satellite.sphereImage.src = Satellite.sphereSprite
+    Satellite.explosionImage.src = Satellite.explosionSprite
+    Satellite.finishFunc = finishFunc
+
     this.#angle = Satellite.lastAngle
-    this.#coreInterval = setInterval(() => this.updateCore(), 60)
-    this.#coreInterval = setInterval(() => this.updateMain(), 100)
+    this.#coreInterval = setInterval(() => this.updateCore(), 100)
+    this.#mainInterval = setInterval(() => this.updateMain(), 100)
+
+    // setInterval(() => this.generateExplosion(), 100)
   }
 
 
 
   draw () {
-    this.#angle = this.#angle > 359 ? 0 : this.#angle + 0.5
+    if (this.#destroyed === false) this.#angle = this.#angle >= 359 ? 0 : this.#angle + 1
 
-    const x = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius
-    const y = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius
+    if (Satellite.importantAngles.includes(this.#angle)) Satellite.lastAngle = this.#angle + 5
+
+    this.#xPos = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius + 465
+    this.#yPos = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius + 315
 
     const coreX = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius
     const coreY = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius
 
-    Satellite.context.drawImage(Satellite.mainImage, this.#mainAnimationX, this.#mainAnimationY, 300, 300, x + 490 - 25, y + 340 - 25, 50, 50)
-    Satellite.context.drawImage(Satellite.sphereImage, this.#coreAnimationX, this.#coreAnimationY, 280, 280, coreX + 490 - 12.5 , coreY + 340 - 12.5, 25, 25)
+    if (this.#destroyed) {
+      Satellite.context.drawImage(Satellite.explosionImage, this.#mainAnimationX, 0, 192, 192, this.#xPos - 50, this.#yPos - 50, 150, 150)
+    } else {
+      Satellite.context.drawImage(Satellite.mainImage, this.#mainAnimationX, this.#mainAnimationY, 300, 300, this.#xPos, this.#yPos, 50, 50)
+      Satellite.context.drawImage(Satellite.sphereImage, this.#coreAnimationX, this.#coreAnimationY, 280, 280, coreX + 490 - 12.5 , coreY + 340 - 12.5, 25, 25)
+    }
   }
 
 
@@ -81,6 +99,32 @@ class Satellite {
     } else {
       this.#mainAnimationX = this.#mainAnimationX + 300
     }
+  }
+
+
+  generateExplosion () {
+    if (this.#mainAnimationX === 768) {
+      // this.#mainAnimationX = 0
+      clearInterval(this.#mainInterval)
+      setTimeout(() => Satellite.finishFunc(), 1000)
+    } else {
+      this.#mainAnimationX = this.#mainAnimationX + 192
+    }
+  }
+
+
+  getCoordinates () {
+    return { x: this.#xPos + 20, y: this.#yPos + 20, r: 20 }
+  }
+
+
+
+  destroy () {
+    this.#destroyed = true
+    clearInterval(this.#coreInterval)
+    clearInterval(this.#mainInterval)
+    this.#mainAnimationX = 0
+    this.#mainInterval = setInterval(() => this.generateExplosion(), 150)
   }
 }
 
