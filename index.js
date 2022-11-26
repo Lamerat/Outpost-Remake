@@ -6,6 +6,7 @@ import Fighter from './classes/Fighter.js'
 import Hud from './classes/Hud.js'
 import Laser from './classes/Laser.js'
 import { explosionCoordinates } from './common/constants.js'
+import Satellite from './classes/Satellite.js'
 
 /** @type { HTMLCanvasElement } */
 const canvas = document.getElementById('game');
@@ -17,6 +18,7 @@ let level = 1
 let score = 0
 let shipsRemaining = 16
 let shipsPlaced = 16
+let timeForSatellite = false
 
 /**@type { { left: Fighter, right: Fighter, top: Fighter, bottom: Fighter } } */
 const enemies = { left: null, right: null, top: null, bottom: null }
@@ -34,6 +36,9 @@ let lasers = []
 let bombs = []
 /** @type { Array<Explosion> } */
 let explosions = []
+
+
+const tempSat = new Satellite(canvas)
 
 
 // Create stars
@@ -60,6 +65,7 @@ const clearEnemy = (position) => {
     level++
     shipsPlaced = 16
     shipsRemaining = 16
+    timeForSatellite = true
   }
 }
 
@@ -100,16 +106,19 @@ const draw = () => {
   context.fillText(`LEVEL: ${level}`, 10, 25)
   context.fillText(`SCORE: ${score}`, 10, 45)
   context.fillText(`REMAINING ENEMIES: ${shipsRemaining}`, 10, 65)
+  hud.draw(Ship.energy, Ship.heat)
 
   ship.draw()
   lasers.forEach(laser => laser.draw())
   bombs.forEach(bomb => bomb.draw())
 
-  Object.values(enemies).filter(x => x).forEach(fighter => fighter.draw())
-  
-  explosions.forEach(explosion => explosion.draw())
+  if (timeForSatellite === false) {
+    Object.values(enemies).filter(x => x).forEach(fighter => fighter.draw())
+  } else {
+    tempSat.draw()
+  }
 
-  hud.draw(Ship.energy, Ship.heat)
+  explosions.forEach(explosion => explosion.draw())
 }
 
 // Update elements and check for collisions
