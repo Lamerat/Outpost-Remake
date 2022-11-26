@@ -321,6 +321,7 @@ class Ship {
     switch (side) {
       case 'topLeft':
         if (Ship.topLeftSensors.length) {
+          Ship.powerSound.currentTime = 0
           Ship.powerSound.play()
           setTimeout(() => Ship.topLeftSensors.shift(), 500)
           setTimeout(() => Ship.topLeftSensors.shift(), 1000)
@@ -331,6 +332,7 @@ class Ship {
         break
       case 'topRight':
         if (Ship.topRightSensors.length) {
+          Ship.powerSound.currentTime = 0
           Ship.powerSound.play()
           setTimeout(() => Ship.topRightSensors.shift(), 500)
           setTimeout(() => Ship.topRightSensors.shift(), 1000)
@@ -341,6 +343,7 @@ class Ship {
         break
       case 'bottomLeft':
         if (Ship.bottomLeftSensors.length) {
+          Ship.powerSound.currentTime = 0
           Ship.powerSound.play()
           setTimeout(() => Ship.bottomLeftSensors.shift(), 500)
           setTimeout(() => Ship.bottomLeftSensors.shift(), 1000)
@@ -351,6 +354,7 @@ class Ship {
         break
       case 'bottomRight':
         if (Ship.bottomRightSensors.length) {
+          Ship.powerSound.currentTime = 0
           Ship.powerSound.play()
           setTimeout(() => Ship.bottomRightSensors.shift(), 500)
           setTimeout(() => Ship.bottomRightSensors.shift(), 1000)
