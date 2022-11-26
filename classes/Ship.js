@@ -17,6 +17,7 @@ class Ship {
   }
   static canvasWidth
   static canvasHeight
+  static powerSound = new Audio('../sounds/powerDown.mp3')
   static baseImage = new Image()
   static glassImage = new Image()
   static coreImage = new Image()
@@ -42,6 +43,54 @@ class Ship {
     top: true,
     bottom: true
   }
+
+  static topLeftSensors = [
+    { x: 411, y: 314},
+    { x: 411, y: 304},
+    { x: 411, y: 294},
+    { x: 416, y: 282},
+    { x: 424, y: 274},
+    { x: 432, y: 266},
+    { x: 444, y: 261},
+    { x: 454, y: 261},
+    { x: 464, y: 261}
+  ]
+
+  static topRightSensors = [
+    { x: 516, y: 261},
+    { x: 526, y: 261},
+    { x: 536, y: 261},
+    { x: 548, y: 266},
+    { x: 556, y: 274},
+    { x: 564, y: 282},
+    { x: 569, y: 294},
+    { x: 569, y: 304},
+    { x: 569, y: 314},
+  ]
+
+  static bottomLeftSensors = [
+    { x: 411, y: 366},
+    { x: 411, y: 376},
+    { x: 411, y: 386},
+    { x: 416, y: 398},
+    { x: 424, y: 406},
+    { x: 432, y: 414},
+    { x: 444, y: 419},
+    { x: 454, y: 419},
+    { x: 464, y: 419}
+  ]
+
+  static bottomRightSensors = [
+    { x: 516, y: 419},
+    { x: 526, y: 419},
+    { x: 536, y: 419},
+    { x: 548, y: 414},
+    { x: 556, y: 406},
+    { x: 564, y: 398},
+    { x: 569, y: 386},
+    { x: 569, y: 376},
+    { x: 569, y: 366},
+  ]
 
   /** @type { 'none' | 'left' | 'right' | 'top' | 'bottom' } */
   static shield = 'none'
@@ -263,6 +312,57 @@ class Ship {
     if (Ship.cannon === side) Ship.cannon = 'none'
   }
 
+  
+  /**
+   * Get damage from diagonal
+   * @param { 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' } side 
+   */
+  diagonalDamage(side) {
+    switch (side) {
+      case 'topLeft':
+        if (Ship.topLeftSensors.length) {
+          Ship.powerSound.play()
+          setTimeout(() => Ship.topLeftSensors.shift(), 500)
+          setTimeout(() => Ship.topLeftSensors.shift(), 1000)
+          setTimeout(() => Ship.topLeftSensors.shift(), 1500)
+        } else {
+          console.log('Ship destroyed')
+        }
+        break
+      case 'topRight':
+        if (Ship.topRightSensors.length) {
+          Ship.powerSound.play()
+          setTimeout(() => Ship.topRightSensors.shift(), 500)
+          setTimeout(() => Ship.topRightSensors.shift(), 1000)
+          setTimeout(() => Ship.topRightSensors.shift(), 1500)
+        } else {
+          console.log('Ship destroyed')
+        }
+        break
+      case 'bottomLeft':
+        if (Ship.bottomLeftSensors.length) {
+          Ship.powerSound.play()
+          setTimeout(() => Ship.bottomLeftSensors.shift(), 500)
+          setTimeout(() => Ship.bottomLeftSensors.shift(), 1000)
+          setTimeout(() => Ship.bottomLeftSensors.shift(), 1500)
+        } else {
+          console.log('Ship destroyed')
+        }
+        break
+      case 'bottomRight':
+        if (Ship.bottomRightSensors.length) {
+          Ship.powerSound.play()
+          setTimeout(() => Ship.bottomRightSensors.shift(), 500)
+          setTimeout(() => Ship.bottomRightSensors.shift(), 1000)
+          setTimeout(() => Ship.bottomRightSensors.shift(), 1500)
+        } else {
+          console.log('Ship destroyed')
+        }
+      default:
+        break
+    }
+  }
+
 
   draw() {
     Ship.context.drawImage(Ship.coreImage, Ship.coreAnimationX, Ship.coreAnimationY, 100, 100, (Ship.canvasWidth - 48) / 2, (Ship.canvasHeight - 48) / 2, 48, 48)
@@ -272,6 +372,39 @@ class Ship {
     Ship.context.drawImage(Ship.orbs.magenta, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 520, 278, 32, 32)
     Ship.context.drawImage(Ship.orbs.yellow, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 428, 370, 32, 32)
     Ship.context.drawImage(Ship.orbs.green, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 520, 370, 32, 32)
+
+    Ship.context.beginPath()
+    Ship.context.fillStyle = '#d930db'
+    Ship.topRightSensors.forEach(coords => {
+      Ship.context.arc(coords.x, coords.y, 2, 0, 2 * Math.PI)
+      Ship.context.closePath()
+    })
+    Ship.context.fill()
+
+    Ship.context.beginPath()
+    Ship.context.fillStyle = '#007acf'
+    Ship.topLeftSensors.forEach(coords => {
+      Ship.context.arc(coords.x, coords.y, 2, 0, 2 * Math.PI)
+      Ship.context.closePath()
+    })
+    Ship.context.fill()
+
+    Ship.context.beginPath()
+    Ship.context.fillStyle = '#f1d907'
+    Ship.bottomLeftSensors.forEach(coords => {
+      Ship.context.arc(coords.x, coords.y, 2, 0, 2 * Math.PI)
+      Ship.context.closePath()
+    })
+    Ship.context.fill()
+
+    Ship.context.beginPath()
+    Ship.context.fillStyle = '#16e129'
+    Ship.bottomRightSensors.forEach(coords => {
+      Ship.context.arc(coords.x, coords.y, 2, 0, 2 * Math.PI)
+      Ship.context.closePath()
+    })
+    Ship.context.fill()
+
     Ship.drawGlass()
     if (Ship.shield !== 'none') Ship.drawShield()
     Ship.drawCannon()
