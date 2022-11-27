@@ -1,7 +1,7 @@
 class Bomb {
   static counter = 0
   static context
-  static bombSprite = '../images/enemyBombSprite.png'
+  static bombSprite = './images/enemyBombSprite.png'
   static bombImage = new Image()
   static speed = 10
 

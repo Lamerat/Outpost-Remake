@@ -1,6 +1,6 @@
 class BigBang {
   static context
-  static sprite = '../images/explosionCore.png'
+  static sprite = './images/explosionCore.png'
   static image = new Image()
   static callbackFunc
 

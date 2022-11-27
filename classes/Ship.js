@@ -2,22 +2,22 @@ class Ship {
   static #singleton = false
   static width = 172
   static height = 172
-  static baseSprite = '../images/shipBase.png'
-  static glassSprite = '../images/glass.png'
-  static coreSprite = '../images/coreSprite.png'
-  static lightingSprite = '../images/colorLightning.png'
-  static shieldSprite = '../images/shieldSprites.png'
-  static cannonSprite = '../images/cannons.png'
-  static sideSprite = '../images/sideParts.png'
+  static baseSprite = './images/shipBase.png'
+  static glassSprite = './images/glass.png'
+  static coreSprite = './images/coreSprite.png'
+  static lightingSprite = './images/colorLightning.png'
+  static shieldSprite = './images/shieldSprites.png'
+  static cannonSprite = './images/cannons.png'
+  static sideSprite = './images/sideParts.png'
   static orbsSprite = {
-    blue: '../images/blueOrb.png',
-    magenta: '../images/magentaOrb.png',
-    green: '../images/greenOrb.png',
-    yellow: '../images/yellowOrb.png'
+    blue: './images/blueOrb.png',
+    magenta: './images/magentaOrb.png',
+    green: './images/greenOrb.png',
+    yellow: './images/yellowOrb.png'
   }
   static canvasWidth
   static canvasHeight
-  static powerSound = new Audio('../sounds/powerDown.mp3')
+  static powerSound = new Audio('./sounds/powerDown.mp3')
   static baseImage = new Image()
   static glassImage = new Image()
   static coreImage = new Image()

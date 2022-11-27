@@ -1,11 +1,11 @@
 class Explosion {
   static counter = 0
   static context
-  static sprite = '../images/explosion.png'
+  static sprite = './images/explosion.png'
   static explosionImage = new Image()
   static clearFunction
 
-  #sound = new Audio('../sounds/explosion2.mp3')
+  #sound = new Audio('./sounds/explosion2.mp3')
   #animationX = 0
   #explosionWidth = 100   // default for normal
   #explosionHeight = 100  // default for normal

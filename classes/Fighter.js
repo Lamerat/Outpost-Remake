@@ -1,14 +1,14 @@
 class Fighter {
   static context
-  static fighterSprite = { first: '../images/spaceShipSprites.png', second: '../images/spaceShipSprites2.png' }
-  static explosionSprite = '../images/explosion.png'
+  static fighterSprite = { first: './images/spaceShipSprites.png', second: './images/spaceShipSprites2.png' }
+  static explosionSprite = './images/explosion.png'
   static fighterImage = new Image()
   static explosionImage = new Image()
   static shootFunc
   static gameLevel
   static clearFunc
   
-  #explosionSound = new Audio('../sounds/explosion.wav')
+  #explosionSound = new Audio('./sounds/explosion.wav')
   #animationX = 0
   #animationY = 0
   #currentAnimation

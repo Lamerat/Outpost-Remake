@@ -1,6 +1,6 @@
 class Hud {
   static context
-  static hudSprite = '../images/hud.png'
+  static hudSprite = './images/hud.png'
   static hudImage = new Image()
   static hudX = 755
   static hudY = 625

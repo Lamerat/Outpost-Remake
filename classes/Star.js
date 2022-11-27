@@ -1,6 +1,6 @@
 class Star {
   static context
-  static sprite = '../images/star.png'
+  static sprite = './images/star.png'
   static starImage = new Image()
 
   #xPos

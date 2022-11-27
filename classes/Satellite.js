@@ -1,9 +1,9 @@
 class Satellite {
   static context
-  static mainSprite = '../images/satellite.png'
-  static sphereSprite = '../images/satelliteSphere.png'
-  static explosionSprite = '../images/satelliteExplode.png'
-  static thunderSprite = '../images/thunder.png'
+  static mainSprite = './images/satellite.png'
+  static sphereSprite = './images/satelliteSphere.png'
+  static explosionSprite = './images/satelliteExplode.png'
+  static thunderSprite = './images/thunder.png'
   static mainImage = new Image()
   static sphereImage = new Image()
   static explosionImage = new Image()
@@ -36,8 +36,8 @@ class Satellite {
   #yPos
   #destroyed = false
   #shoot = false
-  #movingSound = new Audio('../sounds/sputnik.mp3')
-  #thunderSound = new Audio('../sounds/thunder.mp3')
+  #movingSound = new Audio('./sounds/sputnik.mp3')
+  #thunderSound = new Audio('./sounds/thunder.mp3')
 
   /**
    * Convert degrees to radians

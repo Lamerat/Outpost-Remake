@@ -1,9 +1,9 @@
 class Laser {
   static counter = 0
   static context
-  static laserSprite = '../images/laserSprite.png'
+  static laserSprite = './images/laserSprite.png'
 
-  #sound = new Audio('../sounds/laser.mp3')
+  #sound = new Audio('./sounds/laser.mp3')
   #laserImage = new Image()
   #id
   #position
