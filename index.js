@@ -7,18 +7,25 @@ import Hud from './classes/Hud.js'
 import Laser from './classes/Laser.js'
 import { explosionCoordinates } from './common/constants.js'
 import Satellite from './classes/Satellite.js'
+import BigBang from './classes/BigBang.js'
 
+let gameStarted = false
+let demoTimer
 /** @type { HTMLCanvasElement } */
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d')
+const infoText = new Image()
+infoText.src = './images/text.png'
 
-const shipScore = 200
+const shipScore = 40
+const satelliteScore = 200
 let allowShoot = true
 let level = 1
 let score = 0
 let shipsRemaining = 16
 let shipsPlaced = 16
 let timeForSatellite = false
+let playerDestroyed = false
 
 /**@type { { left: Fighter, right: Fighter, top: Fighter, bottom: Fighter } } */
 const enemies = { left: null, right: null, top: null, bottom: null }
@@ -26,9 +33,27 @@ const freePositions = { left: true, right: true, top: true, bottom: true }
 /**@type { Satellite } */
 let satellite = null
 
+const finishDestroyPlayer = () => {
+  explosions.push(new Explosion(canvas, { x: 414, y: 264 }, 'small', clearExplosion))
+  explosions.push(new Explosion(canvas, { x: 506, y: 264 }, 'small', clearExplosion))
+  explosions.push(new Explosion(canvas, { x: 414, y: 356 }, 'small', clearExplosion))
+  explosions.push(new Explosion(canvas, { x: 506, y: 356 }, 'small', clearExplosion))
+  ship.destroy()
+}
+
+const destroyPlayer = () => {
+  timeForSatellite = false
+  if (satellite) satellite.clean()
+  satellite = null
+  playerDestroyed = true
+  Object.keys(enemies).filter(x => enemies[x] !== null).forEach(s => enemies[s].clean())
+  Object.keys(enemies).forEach(x => enemies[x] = null)
+  bombs = []
+  explosions.push(new BigBang(canvas, finishDestroyPlayer))
+}
 
 const stars = []
-const ship = new Ship(canvas)
+const ship = new Ship(canvas, destroyPlayer)
 const hud = new Hud(canvas)
 
 // Object arrays
@@ -83,7 +108,7 @@ const destroyEnemy = (position, laserId) => {
 }
 
 const createEnemyShip = () => {
-  if (timeForSatellite) return
+  if (timeForSatellite || playerDestroyed) return
 
   const pos = Object.keys(freePositions).map(x => freePositions[x] ? x : null).filter(s => s)
 
@@ -103,7 +128,6 @@ const createEnemyShip = () => {
   setTimeout(() => createEnemyShip(), nextCall)
 }
 
-
 const changeLevel = () => {
   level++
   shipsPlaced = 16
@@ -120,20 +144,27 @@ const draw = () => {
   stars.forEach(x => x.draw())
   context.font = '15px Arial'
   context.fillStyle = 'gray'
-  context.fillText(`LEVEL: ${level}`, 10, 25)
-  context.fillText(`SCORE: ${score}`, 10, 45)
-  context.fillText(`REMAINING ENEMIES: ${shipsRemaining}`, 10, 65)
-  hud.draw(Ship.energy, Ship.heat)
+  context.fillText(`LEVEL: ${level.toString().padStart(2, 0)}`, 10, 25)
+  context.fillText(`SCORE: ${score.toString().padStart(4, 0)}`, 10, 45)
 
-  if (timeForSatellite && satellite) satellite.draw()
+  if (!gameStarted) {
+    context.drawImage(infoText, 0, 0, 858, 81, 61, 80, 858, 81)
+    context.drawImage(infoText, 0, 81, 641, 63, 169.5, 490, 641, 63)
+    context.font = '20px Arial'
+    context.fillText('press any key to start', 400, 590)
+  }
+
+  if (gameStarted) {
+    hud.draw(Ship.energy, Ship.heat)
+    if (timeForSatellite && satellite) satellite.draw()
+  }
 
   ship.draw()
+
   lasers.forEach(laser => laser.draw())
   bombs.forEach(bomb => bomb.draw())
 
   Object.values(enemies).filter(x => x).forEach(fighter => fighter.draw())
-
-  
 
   explosions.forEach(explosion => explosion.draw())
 }
@@ -191,7 +222,10 @@ const update = () => {
       if (position === 'bottom') laserY = laserY + 30
       if (position === 'right') laserX = laserX + 30
       
-      if (satelliteCollision(laserX, laserY, satX, satY, r)) satellite.destroy()
+      if (satelliteCollision(laserX, laserY, satX, satY, r)) {
+        satellite.destroy()
+        score = score + satelliteScore
+      }
     }
     
     laser.update()
@@ -313,11 +347,18 @@ const starsUpdate = () => {
 }
 
 
+const demo = () => {
+  const directions = Object.keys(enemies)
+  const rndShoot = Math.floor(Math.random() * directions.length)
+  const rndShield = Math.floor(Math.random() * directions.length)
+  const currentShoot = directions[rndShoot]
+  const currentShield = directions[rndShield]
 
+  ship.shoot(currentShoot)
+  lasers.push(new Laser(canvas, currentShoot))
+  ship.createShield(currentShield)
+}
 
-
-
-let temp
 
 window.onload = () => {
   document.addEventListener('keydown', (e) => {
@@ -366,16 +407,24 @@ window.onload = () => {
     }
 
     document.addEventListener('keyup', (e) => {
+      if (!gameStarted) {
+        clearInterval(demoTimer)
+        gameStarted = true
+        lasers = []
+        Ship.shield = 'none'
+        ship.shoot('none')
+        setTimeout(() => createEnemyShip(), 1000)
+      }
+
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) allowShoot = true
     })
   })
-
-  temp = setInterval(() => {
+  
+  setInterval(() => {
     draw()
     update()
   }, 1000 / 60)
 
+  demoTimer = setInterval(() => demo(), 500)
   setInterval(() => starsUpdate(), 1000)
-
-  setTimeout(() => createEnemyShip(), 1000)
 }

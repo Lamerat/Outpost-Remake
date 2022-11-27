@@ -36,6 +36,8 @@ class Satellite {
   #yPos
   #destroyed = false
   #shoot = false
+  #movingSound = new Audio('../sounds/sputnik.mp3')
+  #thunderSound = new Audio('../sounds/thunder.mp3')
 
   /**
    * Convert degrees to radians
@@ -61,6 +63,10 @@ class Satellite {
     Satellite.finishFunc = finishFunc
     Satellite.damageFunc = damageFunc
 
+    this.#movingSound.loop = true
+    this.#movingSound.currentTime = 0
+    this.#movingSound.play()
+
     this.#angle = Satellite.lastAngle
     this.#coreInterval = setInterval(() => this.updateCore(), 100)
     this.#mainInterval = setInterval(() => this.updateMain(), 100)
@@ -75,21 +81,29 @@ class Satellite {
             this.#thunderAnimationY = 560
             this.#thunderX = 543
             this.#thunderY = 396
+            this.#thunderSound.currentTime = 0.5
+            this.#thunderSound.play()
             break
           case 135:
             this.#thunderAnimationY = 840
             this.#thunderX = 313
             this.#thunderY = 396
+            this.#thunderSound.currentTime = 0.5
+            this.#thunderSound.play()
           break
           case 225:
             this.#thunderAnimationY = 0
             this.#thunderX = 313
             this.#thunderY = 163
+            this.#thunderSound.currentTime = 0.5
+            this.#thunderSound.play()
             break
           case 315:
             this.#thunderAnimationY = 280
             this.#thunderX = 543
             this.#thunderY = 163
+            this.#thunderSound.currentTime = 0.5
+            this.#thunderSound.play()
             break
           default:
             break;
@@ -105,7 +119,7 @@ class Satellite {
       }
     }
 
-    if (Satellite.importantAngles.includes(this.#angle)) Satellite.lastAngle = this.#angle + 5
+    if (Satellite.importantAngles.includes(this.#angle)) Satellite.lastAngle = this.#angle + 46
 
     this.#xPos = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius + 465
     this.#yPos = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius + 315
@@ -175,6 +189,7 @@ class Satellite {
       this.#shoot = false
       Satellite.damageFunc(Satellite.shootAngles[this.#angle])
       this.#angle = this.#angle + 1
+      // this.#thunderSound.pause()
     } else {
       this.#thunderAnimationX = this.#thunderAnimationX + 280
     }
@@ -187,11 +202,20 @@ class Satellite {
 
 
   destroy () {
+    this.#movingSound.pause()
     this.#destroyed = true
     clearInterval(this.#coreInterval)
     clearInterval(this.#mainInterval)
     this.#mainAnimationX = 0
     this.#mainInterval = setInterval(() => this.generateExplosion(), 150)
+  }
+
+  clean () {
+    this.#movingSound.pause()
+    this.#destroyed = true
+    clearInterval(this.#coreInterval)
+    clearInterval(this.#mainInterval)
+    this.#mainAnimationX = 0
   }
 }
 

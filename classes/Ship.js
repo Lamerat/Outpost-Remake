@@ -44,6 +44,9 @@ class Ship {
     bottom: true
   }
 
+  static destroyed = false
+  static destroyedFunc
+
   static topLeftSensors = [
     { x: 411, y: 314},
     { x: 411, y: 304},
@@ -103,9 +106,10 @@ class Ship {
   static context
 
   /**
-   * @param { HTMLCanvasElement } canvas 
+   * @param { HTMLCanvasElement } canvas
+   * @param { Function } destroyFunc
    */
-  constructor(canvas) {
+  constructor(canvas, destroyFunc) {
     if (Ship.#singleton) {
       throw new Error(`Class 'Ship' must be singleton!`)
     }
@@ -121,6 +125,7 @@ class Ship {
     Ship.shieldImage.src = Ship.shieldSprite
     Ship.cannonImage.src = Ship.cannonSprite
     Ship.sideImage.src = Ship.sideSprite
+    Ship.destroyedFunc = destroyFunc
     
     Object.keys(Ship.orbs).forEach(key => Ship.orbs[key].src = Ship.orbsSprite[key])
 
@@ -132,9 +137,10 @@ class Ship {
     setInterval(() => Ship.updateShield(), 200)
   }
 
+
   static drawBase() {
-    const leftImgCoordinates =Ship.corpusCondition.left === false ? 0 : 172
-    const rightImgCoordinates =Ship.corpusCondition.right === false ? 0 : 172
+    const leftImgCoordinates = Ship.corpusCondition.left === false ? 0 : 172
+    const rightImgCoordinates = Ship.corpusCondition.right === false ? 0 : 172
     const topImgCoordinates = Ship.corpusCondition.top === false ? 0 : 172
     const bottomImgCoordinates = Ship.corpusCondition.bottom === false ? 0 : 172
     
@@ -143,15 +149,17 @@ class Ship {
     Ship.context.drawImage(Ship.sideImage, topImgCoordinates, 344, 172, 172, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
     Ship.context.drawImage(Ship.sideImage, bottomImgCoordinates, 516, 172, 172, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
     
-    
-    Ship.context.drawImage(Ship.baseImage, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
+    const x = Ship.destroyed ? 643 : 0
+    Ship.context.drawImage(Ship.baseImage, x, 0, 643, 643, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
   }
 
   static drawGlass() {
     Ship.context.globalAlpha = 0.5
-    Ship.context.drawImage(Ship.glassImage, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
+    const xTrim = Ship.destroyed ? 643 : 0
+    Ship.context.drawImage(Ship.glassImage, xTrim, 0, 643, 643, (Ship.canvasWidth - Ship.width) / 2, (Ship.canvasHeight - Ship.height) / 2, Ship.width, Ship.height)
     Ship.context.globalAlpha = 1
   }
+
 
   static drawCore() {
     if (Ship.coreAnimationX === 300 && Ship.coreAnimationY === 1400) {
@@ -168,6 +176,7 @@ class Ship {
     }
   }
 
+
   static drawPowerOrbs() {
     if (Ship.orbAnimationX === 900) {
       Ship.orbAnimationY < 900
@@ -179,6 +188,7 @@ class Ship {
       Ship.orbAnimationX = Ship.orbAnimationX + 100
     }
   }
+
 
   static drawLightnings() {
     Ship.lightingAnimation < 224
@@ -263,6 +273,7 @@ class Ship {
     }
   }
 
+
   static updateShield() {
     if (Ship.energy < 100 && Ship.shield === 'none') {
       Ship.energy = Ship.energy + 5
@@ -275,12 +286,13 @@ class Ship {
    * @param { 'left' | 'right' | 'top' | 'bottom' | 'none' } position 
    */
   createShield(position) {
-    if (Ship.energy < 20 && position !== 'none') {
+    if ((Ship.energy < 20 && position !== 'none') || Ship.destroyed) {
       return
     }
 
     Ship.shield = position
   }
+
 
   /**
    * Set shoot position
@@ -289,6 +301,7 @@ class Ship {
   shoot(position) {
     if (Ship.corpusCondition[position] === false) return false
     if (Ship.heat >= 100) return false
+    if (Ship.destroyed) return false
     if (Ship.shield === position) Ship.shield = 'none'
 
     Ship.heat = Ship.heat + 10
@@ -297,22 +310,44 @@ class Ship {
   }
 
 
-  shieldDamage() {
+  shieldDamage () {
     Ship.shield = 'none'
     Ship.energy = Ship.energy - 20
   }
 
+
+  destroy () {
+    Ship.shield = 'none'
+    Ship.cannon = 'none'
+    Ship.destroyed = true
+    Ship.topLeftSensors = []
+    Ship.topRightSensors = []
+    Ship.bottomLeftSensors = []
+    Ship.bottomRightSensors = []
+  }
 
   /**
    * Set shoot position
    * @param { 'left' | 'right' | 'top' | 'bottom' } side 
    */
   corpusDamage(side) {
-    Ship.corpusCondition[side] = false
+    if (Ship.corpusCondition[side] === false) {
+      Ship.destroyedFunc()
+    } else {
+      Ship.corpusCondition[side] = false
+    }
+
     if (Ship.cannon === side) Ship.cannon = 'none'
   }
 
-  
+
+  static playPowerSound () {
+    if (Ship.powerSound.currentTime) Ship.powerSound.pause()
+    Ship.powerSound.currentTime = 0
+    Ship.powerSound.play()
+  }
+
+
   /**
    * Get damage from diagonal
    * @param { 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' } side 
@@ -321,46 +356,42 @@ class Ship {
     switch (side) {
       case 'topLeft':
         if (Ship.topLeftSensors.length) {
-          Ship.powerSound.currentTime = 0
-          Ship.powerSound.play()
+          Ship.playPowerSound()
           setTimeout(() => Ship.topLeftSensors.shift(), 500)
           setTimeout(() => Ship.topLeftSensors.shift(), 1000)
           setTimeout(() => Ship.topLeftSensors.shift(), 1500)
         } else {
-          console.log('Ship destroyed')
+          Ship.destroyedFunc()
         }
         break
       case 'topRight':
         if (Ship.topRightSensors.length) {
-          Ship.powerSound.currentTime = 0
-          Ship.powerSound.play()
+          Ship.playPowerSound()
           setTimeout(() => Ship.topRightSensors.shift(), 500)
           setTimeout(() => Ship.topRightSensors.shift(), 1000)
           setTimeout(() => Ship.topRightSensors.shift(), 1500)
         } else {
-          console.log('Ship destroyed')
+          Ship.destroyedFunc()
         }
         break
       case 'bottomLeft':
         if (Ship.bottomLeftSensors.length) {
-          Ship.powerSound.currentTime = 0
-          Ship.powerSound.play()
+          Ship.playPowerSound()
           setTimeout(() => Ship.bottomLeftSensors.shift(), 500)
           setTimeout(() => Ship.bottomLeftSensors.shift(), 1000)
           setTimeout(() => Ship.bottomLeftSensors.shift(), 1500)
         } else {
-          console.log('Ship destroyed')
+          Ship.destroyedFunc()
         }
         break
       case 'bottomRight':
         if (Ship.bottomRightSensors.length) {
-          Ship.powerSound.currentTime = 0
-          Ship.powerSound.play()
+          Ship.playPowerSound()
           setTimeout(() => Ship.bottomRightSensors.shift(), 500)
           setTimeout(() => Ship.bottomRightSensors.shift(), 1000)
           setTimeout(() => Ship.bottomRightSensors.shift(), 1500)
         } else {
-          console.log('Ship destroyed')
+          Ship.destroyedFunc()
         }
       default:
         break
@@ -369,13 +400,16 @@ class Ship {
 
 
   draw() {
-    Ship.context.drawImage(Ship.coreImage, Ship.coreAnimationX, Ship.coreAnimationY, 100, 100, (Ship.canvasWidth - 48) / 2, (Ship.canvasHeight - 48) / 2, 48, 48)
+    if (Ship.destroyed === false) Ship.context.drawImage(Ship.coreImage, Ship.coreAnimationX, Ship.coreAnimationY, 100, 100, (Ship.canvasWidth - 48) / 2, (Ship.canvasHeight - 48) / 2, 48, 48)
     Ship.drawBase()
-    Ship.drawLightnings()
-    Ship.context.drawImage(Ship.orbs.blue, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 428, 278, 32, 32)
-    Ship.context.drawImage(Ship.orbs.magenta, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 520, 278, 32, 32)
-    Ship.context.drawImage(Ship.orbs.yellow, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 428, 370, 32, 32)
-    Ship.context.drawImage(Ship.orbs.green, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 520, 370, 32, 32)
+
+    if (Ship.destroyed === false) {
+      Ship.drawLightnings()
+      Ship.context.drawImage(Ship.orbs.blue, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 428, 278, 32, 32)
+      Ship.context.drawImage(Ship.orbs.magenta, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 520, 278, 32, 32)
+      Ship.context.drawImage(Ship.orbs.yellow, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 428, 370, 32, 32)
+      Ship.context.drawImage(Ship.orbs.green, Ship.orbAnimationX, Ship.orbAnimationY, 100, 100, 520, 370, 32, 32)
+    }
 
     Ship.context.beginPath()
     Ship.context.fillStyle = '#d930db'
