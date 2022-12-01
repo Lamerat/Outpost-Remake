@@ -1,146 +1,96 @@
-class Fighter {
-  static context
-  static fighterSprite = { first: './images/spaceShipSprites.png', second: './images/spaceShipSprites2.png' }
-  static explosionSprite = './images/explosion.png'
-  static fighterImage = new Image()
-  static explosionImage = new Image()
+import GameObject from './GameObject.js'
+
+/** @typedef { 'left' | 'right' | 'top' | 'bottom' } sideDirections */
+
+class Fighter extends GameObject {
   static shootFunc
-  static gameLevel
-  static clearFunc
+  static cleanFunc
+  static shootTimes = {
+    1: { max: 3000, min: 1500 },
+    2: { max: 3000, min: 1200 },
+    3: { max: 3000, min: 1000 },
+    4: { max: 2500, min: 1000 },
+    5: { max: 2200, min: 1000 },
+    6: { max: 2000, min: 700 },
+    7: { max: 1700, min: 500 },
+    8: { max: 1500, min: 500 },
+    9: { max: 1000, min: 500 },
+    10: { max: 600, min: 300 },
+    11: { max: 400, min: 300 },
+    12: { max: 400, min: 200 },
+    13: { max: 300, min: 150 },
+    14: { max: 200, min: 150 },
+    15: { max: 100, min: 80 },
+  }
   
-  #explosionSound = new Audio('./sounds/explosion.wav')
+  #gameLevel
+  #image
+  #position
+  #currentAnimation = this._animationArrive
   #animationX = 0
   #animationY = 0
-  #currentAnimation
-  #position
-  #animationInterval
-  #shootTimeout
-  #removeTimeout
   #shootCount = 1
   #destroyed = false
+  #createdTime = new Date()
+  #stayTime
+  #shootStartTime
+  #shootTime
 
+  #animationInterval
+  #leaveTimeout
+  #shootTimeout
+
+  get destroyed() {
+    return this.#destroyed
+  }
 
   /**
-   * @param { HTMLCanvasElement } canvas
-   * @param { 'left' | 'right' | 'top' | 'bottom' } position
+   * @param { HTMLCanvasElement } canvas 
+   * @param { sideDirections } position 
    * @param { number } gameLevel
    * @param { Function } shootFunc
-   * @param { Function } clearFunc
+   * @param { Function } leaveFunc
    */
-  constructor(canvas, position, gameLevel, shootFunc, clearFunc) {
-    Fighter.context = canvas.getContext('2d')
+  constructor(canvas, position, gameLevel, shootFunc, cleanFunc) {
+    super(canvas)
 
-    Fighter.fighterImage.src = gameLevel <= 5 ? Fighter.fighterSprite.first : Fighter.fighterSprite.second
-    Fighter.explosionImage.src = Fighter.explosionSprite
-    Fighter.gameLevel = gameLevel
     Fighter.shootFunc = shootFunc
-    Fighter.clearFunc = clearFunc
+    Fighter.cleanFunc = cleanFunc
 
+    this.#image = this._createImage(gameLevel <= 5 ? './images/spaceShipSprites.png' : './images/spaceShipSprites2.png')
+    this.#gameLevel = gameLevel
     this.#position = position
-    this.#currentAnimation = this.arrive
 
     this.#animationInterval = setInterval(() => this.#currentAnimation(), 60)
-
-    const timeForStay = Math.floor(Math.random() * (20 - 10) + 10)
-    this.#removeTimeout = setTimeout(() => {
-      this.clean()
-    }, timeForStay * 1000)
-
-    this.shootTimer()
-  }
+    this.#stayTime = this._randomBetween(20_000, 10_000)
+    this.#leaveTimeout = setTimeout(() => this.destroy(false), this.#stayTime)
+    this._shootTimer()
+  }  
 
 
-  shootTimer () {
-    let maxShootWait
-    let minShootWait
-    switch (Fighter.gameLevel) {
-      case 1:
-        maxShootWait = 3_000
-        minShootWait = 1_500
-        break;
-      case 2:
-        maxShootWait = 3_000
-        minShootWait = 1_200
-        break
-      case 3:
-        maxShootWait = 3_000
-        minShootWait = 1_000
-        break
-      case 4:
-        maxShootWait = 2_500
-        minShootWait = 1_000
-        break
-      case 5:
-        maxShootWait = 2_200
-        minShootWait = 1_000
-      case 6:
-        maxShootWait = 2_000
-        minShootWait = 700
-        break
-      case 7:
-        maxShootWait = 1_700
-        minShootWait = 500
-        break
-      case 8:
-        maxShootWait = 1_500
-        minShootWait = 500
-        break
-      case 9:
-        maxShootWait = 1000
-        minShootWait = 500
-        break
-      case 10:
-        maxShootWait = 600
-        minShootWait = 300
-        break
-      default:
-        break
-    }
-
-    const timeForShoot = Math.floor(Math.random() * (maxShootWait - minShootWait) + minShootWait)
-    this.#shootTimeout = setTimeout(() => { this.#animationX = 0; this.#currentAnimation = this.shoot }, timeForShoot * this.#shootCount)
-  }
-
-
-  draw () {
-    if (this.#position === 'left') {
-      if (this.#destroyed) {
-        Fighter.context.drawImage(Fighter.explosionImage, this.#animationX, 0, 200, 200, 0, 290, 100, 100)
-      } else {
-        Fighter.context.translate(980 / 2, 680 / 2)
-        Fighter.context.rotate(270 * Math.PI / 180)
-        Fighter.context.drawImage(Fighter.fighterImage, this.#animationX, this.#animationY, 350, 270, -50, -480, 100, 77)
-        Fighter.context.resetTransform()
-      }
-    } else if (this.#position === 'right') {
-      if (this.#destroyed) {
-        Fighter.context.drawImage(Fighter.explosionImage, this.#animationX, 0, 200, 200, 880, 290, 100, 100)
-      } else {
-        Fighter.context.translate(980 / 2, 680 / 2)
-        Fighter.context.rotate(90 * Math.PI / 180)
-        Fighter.context.drawImage(Fighter.fighterImage, this.#animationX, this.#animationY, 350, 270, -50, -480, 100, 77)
-        Fighter.context.resetTransform()
-      }
-    } else if (this.#position === 'bottom') {
-      if (this.#destroyed) {
-        Fighter.context.drawImage(Fighter.explosionImage, this.#animationX, 0, 200, 200, 440, 580, 100, 100)
-      } else {
-        Fighter.context.translate(980 / 2, 680 / 2)
-        Fighter.context.rotate(180 * Math.PI / 180)
-        Fighter.context.drawImage(Fighter.fighterImage, this.#animationX, this.#animationY, 350, 270, -50, -330, 100, 77)
-        Fighter.context.resetTransform()
-      }
+  _animationArrive () {
+    this.#animationY = 540
+    if (this.#animationX === 3150) {
+      this.#animationX = 0
+      this.#currentAnimation = this._animationStop
     } else {
-      if (this.#destroyed) {
-        Fighter.context.drawImage(Fighter.explosionImage, this.#animationX, 0, 200, 200, 440, 0, 100, 100)
-      } else {
-        Fighter.context.drawImage(Fighter.fighterImage, this.#animationX, this.#animationY, 350, 270, 440, 10, 100, 77)
-      }
+      this.#animationX = this.#animationX + 350
     }
   }
 
 
-  idle () {
+  _animationStop () {
+    this.#animationY = 270
+    if (this.#animationX === 3150) {
+      this.#animationX = 0
+      this.#currentAnimation = this._animationIdle
+    } else {
+      this.#animationX = this.#animationX + 350
+    }
+  }
+
+
+  _animationIdle() {
     this.#animationY = 0
     this.#animationX === 3150
       ? this.#animationX = this.#animationX = 0
@@ -148,72 +98,91 @@ class Fighter {
   }
 
 
-  stop () {
-    this.#animationY = 270
+  _animationShoot() {
     if (this.#animationX === 3150) {
       this.#animationX = 0
-      this.#currentAnimation = this.idle
-    } else {
-      this.#animationX = this.#animationX + 350
-    }
-  }
-
-
-  arrive () {
-    this.#animationY = 540
-    if (this.#animationX === 3150) {
-      this.#animationX = 0
-      this.#currentAnimation = this.stop
-    } else {
-      this.#animationX = this.#animationX + 350
-    }
-  }
-
-
-  shoot () {
-    this.#animationY = 1350
-    this.#shootCount = this.#shootCount + 0.5
-    if (this.#animationX === 3150) {
-      this.#animationX = 0
-      this.#currentAnimation = this.idle
-      this.shootTimer()
+      this.#currentAnimation = this._animationIdle
+      this._shootTimer()
     } else if (this.#animationX === 1400) {
+      this.#shootCount = this.#shootCount + 0.5
+      this.#animationX = this.#animationX + 350
+      this.#shootTimeout = null
       Fighter.shootFunc(this.#position)
-      this.#animationX = this.#animationX + 350
     } else {
       this.#animationX = this.#animationX + 350
     }
   }
 
 
-  explode () {
-    this.#explosionSound.volume = 0.2
-    // this.#explosionSound.play()
-    if (this.#animationX === 1200) {
-      clearInterval(this.#animationInterval)
-      Fighter.clearFunc(this.#position)
-    } else {
-      this.#animationX = this.#animationX + 200
-    }
+  _shootTimer() {
+    const { min, max } = Fighter.shootTimes[this.#gameLevel]
+    this.#shootStartTime = new Date()
+    this.#shootTime = this._randomBetween(min, max) * this.#shootCount
+
+    this.#shootTimeout = setTimeout(() => {
+      this.#animationX = 0
+      this.#animationY = 1350
+      this.#currentAnimation = this._animationShoot
+    }, this.#shootTime)
   }
 
 
-  destroy () {
-    clearTimeout(this.#shootTimeout)
-    clearTimeout(this.#removeTimeout)
-    clearInterval(this.#animationInterval)
-    this.#animationInterval = setInterval(() => this.#currentAnimation(), 100)
+  /** @param { boolean } destroyed */
+  destroy(destroyed) {
     this.#destroyed = true
-    this.#currentAnimation = this.explode
-    this.#animationX = 0
+    clearInterval(this.#animationInterval)
+    clearTimeout(this.#shootTimeout)
+    clearTimeout(this.#leaveTimeout)
+    Fighter.cleanFunc(this.#position, destroyed)
   }
 
 
-  clean () {
+  pause() {
     clearInterval(this.#animationInterval)
-    clearTimeout(this.#shootTimeout)
-    clearTimeout(this.#removeTimeout)
-    Fighter.clearFunc(this.#position)
+    clearTimeout(this.#leaveTimeout)
+    this.#stayTime = this.#stayTime - (new Date().getTime() - this.#createdTime.getTime())
+    if (this.#shootTimeout) {
+      clearTimeout(this.#shootTimeout)
+      this.#shootTime = this.#shootTime - (new Date().getTime() - this.#shootStartTime.getTime())
+    }
+  }
+
+  unpause() {
+    this.#animationInterval = setInterval(() => this.#currentAnimation(), 60)
+    this.#leaveTimeout = setTimeout(() => this.destroy(false), this.#stayTime)
+    this.#createdTime = new Date()
+
+    if (this.#shootTimeout && !this.#destroyed) {
+      this.#shootTimeout = setTimeout(() => {
+        this.#animationX = 0
+        this.#animationY = 1350
+        this.#currentAnimation = this._animationShoot
+      }, this.#shootTime)
+    } else {
+      this._shootTimer()
+    }
+  }
+
+
+  draw () {
+    if (this.#position === 'left') {
+      this.ctx.translate(this.canvasHalfWidth, this.canvasHalfHeight)
+      this.ctx.rotate(270 * Math.PI / 180)
+      this.ctx.drawImage(this.#image, this.#animationX, this.#animationY, 350, 270, -50, -480, 100, 77)
+      this.ctx.resetTransform()
+    } else if (this.#position === 'right') {
+      this.ctx.translate(this.canvasHalfWidth, this.canvasHalfHeight)
+      this.ctx.rotate(90 * Math.PI / 180)
+      this.ctx.drawImage(this.#image, this.#animationX, this.#animationY, 350, 270, -50, -480, 100, 77)
+      this.ctx.resetTransform()
+    } else if (this.#position === 'top') {
+      this.ctx.drawImage(this.#image, this.#animationX, this.#animationY, 350, 270, 440, 10, 100, 77)
+    } else {
+      this.ctx.translate(this.canvasHalfWidth, this.canvasHalfHeight)
+      this.ctx.rotate(180 * Math.PI / 180)
+      this.ctx.drawImage(this.#image, this.#animationX, this.#animationY, 350, 270, -50, -330, 100, 77)
+      this.ctx.resetTransform()
+    }
   }
 }
 

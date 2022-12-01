@@ -1,101 +1,96 @@
-class Bomb {
-  static counter = 0
-  static context
-  static bombSprite = './images/enemyBombSprite.png'
-  static bombImage = new Image()
-  static speed = 10
+import GameObject from './GameObject.js'
 
+/** @typedef { 'left' | 'right' | 'top' | 'bottom' } sideDirections */
+
+class Bomb extends GameObject {
+  static counter = 0
+  static speed = 10
+  static clearFunc
+  static startPositions = {
+    left: { x: 80, y: 325 },
+    right: { x: 870, y: 325 },
+    top: { x: 475, y: 80 },
+    bottom: { x: 475, y: 570 },
+  }
+
+  #image = super._createImage('./images/enemyBombSprite.png')
+  #id
+  #xPos
+  #yPos
+  #position
   #animationX = 0
   #animationY = 0
-  #xPosition = 0
-  #yPosition = 0
-  #position
-  #id
   #animationInterval
 
   get id() {
     return this.#id
   }
 
-  get coordinates() {
-    return { position: this.#position, x: this.#xPosition, y: this.#yPosition }
-  }
 
   /**
-   * @param { HTMLCanvasElement } canvas
-   * @param { 'left' | 'right' | 'top' | 'bottom' } position
+   * @param { HTMLCanvasElement } canvas 
+   * @param { sideDirections } position
+   * @param { Function } clearFunc
    */
-  constructor(canvas, position) {
-    Bomb.context = canvas.getContext('2d')
-    Bomb.bombImage.src = Bomb.bombSprite
-    Bomb.counter = Bomb.counter + 1
+  constructor(canvas, position, clearFunc) {
+    super(canvas)
 
+    Bomb.clearFunc = clearFunc
+    Bomb.counter = Bomb.counter + 1
     this.#id = Bomb.counter
+    this.#xPos = Bomb.startPositions[position].x
+    this.#yPos = Bomb.startPositions[position].y
     this.#position = position
 
-    switch (position) {
-      case 'top':
-        this.#xPosition = 475
-        this.#yPosition = 80
-        break
-      case 'bottom':
-        this.#xPosition = 475
-        this.#yPosition = 570
-        break
+    this.#animationInterval = setInterval(() => this._animation(), 20)
+  }
+
+  _updatePosition() {
+    switch (this.#position) {
       case 'left':
-        this.#xPosition = 80
-        this.#yPosition = 325
+        this.#xPos = this.#xPos + Bomb.speed
         break
       case 'right':
-        this.#xPosition = 870
-        this.#yPosition = 325
+        this.#xPos = this.#xPos - Bomb.speed
+        break
+      case 'top':
+        this.#yPos = this.#yPos + Bomb.speed
+        break
+      case 'bottom':
+        this.#yPos = this.#yPos - Bomb.speed
         break
       default:
         break
     }
-
-    this.#animationInterval = setInterval(() => this.animation(), 20)
   }
 
-  draw() {
-    Bomb.context.drawImage(Bomb.bombImage, this.#animationX, this.#animationY, 200, 200, this.#xPosition, this.#yPosition, 30, 30)
-  }
-
-  animation() {
+  _animation() {
     if (this.#animationX === 1000 && this.#animationY === 200) {
       this.#animationX = 0
       this.#animationY = 0
     } else if (this.#animationX === 1200) {
-      this.#animationY < 200
-        ? this.#animationY = this.#animationY + 200
-        : this.#animationY = 0
-
-        this.#animationX = 0
+      this.#animationY < 200 ? this.#animationY = this.#animationY + 200 : this.#animationY = 0
+      this.#animationX = 0
     } else {
       this.#animationX = this.#animationX + 200
     }
   }
 
-  update() {
-    switch (this.#position) {
-      case 'top':
-        this.#yPosition = this.#yPosition + Bomb.speed
-        break
-      case 'bottom':
-        this.#yPosition = this.#yPosition - Bomb.speed
-        break
-      case 'left':
-        this.#xPosition = this.#xPosition + Bomb.speed
-        break
-      case 'right':
-        this.#xPosition = this.#xPosition - Bomb.speed
-      default:
-        break
-    }
-  }
 
   destroy() {
     clearInterval(this.#animationInterval)
+    Bomb.clearFunc(this.#id)
+  }
+
+
+  coordinates() {
+    return { position: this.#position, x: this.#xPos, y: this.#yPos, centerX: this.#xPos + 15, centerY: this.#yPos + 15, radius: 11 }
+  }
+
+
+  draw() {
+    this.ctx.drawImage(this.#image, this.#animationX, this.#animationY, 200, 200, this.#xPos, this.#yPos, 30, 30)
+    this._updatePosition()
   }
 }
 

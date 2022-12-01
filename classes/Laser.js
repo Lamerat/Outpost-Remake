@@ -1,85 +1,117 @@
-class Laser {
+import GameObject from './GameObject.js'
+
+/** @typedef { 'left' | 'right' | 'top' | 'bottom' } sideDirections */
+
+class Laser extends GameObject {
   static counter = 0
-  static context
-  static laserSprite = './images/laserSprite.png'
+  static speed = 10
+  static clearFunc
+  static startPositions = {
+    left: { x: 370, y: 335 },
+    right: { x: 580, y: 335 },
+    top: { x: 485, y: 220 },
+    bottom: { x: 485, y: 430 },
+  }
 
-  #sound = new Audio('./sounds/laser.mp3')
-  #laserImage = new Image()
+
   #id
+  #sound = new Audio('./sounds/laser.mp3')
+  #image = super._createImage('./images/laserSprite.png')
+  #xPos
+  #yPos
   #position
-  #xPosition = 0
-  #yPosition = 0
 
-  get id () {
+  get id() {
     return this.#id
   }
 
-  get coordinates () {
-    return { position: this.#position, x: this.#xPosition, y: this.#yPosition }
+  get position() {
+    return this.#position
   }
+
 
   /**
-   * @param { HTMLCanvasElement } canvas
-   * @param { 'left' | 'right' | 'top' | 'bottom' } position
+   * @param { HTMLCanvasElement } canvas 
+   * @param { sideDirections } position
    */
-  constructor(canvas, position) {
-    Laser.context = canvas.getContext('2d')
+  constructor(canvas, position, clearFunc) {
+    super(canvas)
 
+    Laser.clearFunc = clearFunc
     Laser.counter = Laser.counter + 1
     this.#id = Laser.counter
-
-    this.#sound.volume = 0.1
-    // this.#sound.play()
-
+    this.#xPos = Laser.startPositions[position].x
+    this.#yPos = Laser.startPositions[position].y
     this.#position = position
-    this.#laserImage.src = Laser.laserSprite
 
-    switch (position) {
-      case 'top':
-        this.#xPosition = 485
-        this.#yPosition = 220
-        break
-      case 'bottom':
-        this.#xPosition = 485
-        this.#yPosition = 430
-        break
-      case 'left':
-        this.#xPosition = 370
-        this.#yPosition = 335
-        break
-      case 'right':
-        this.#xPosition = 580
-        this.#yPosition = 335
-        break
-      default:
-        break
-    }
+    // this.#sound.volume = 0.1
+    // this.#sound.play()
   }
 
-  update() {
+
+  _updatePosition() {
     switch (this.#position) {
-      case 'top':
-        this.#yPosition = this.#yPosition - 10
-        break
-      case 'bottom':
-        this.#yPosition = this.#yPosition + 10
-        break
       case 'left':
-        this.#xPosition = this.#xPosition - 10
+        this.#xPos = this.#xPos - Laser.speed
         break
       case 'right':
-        this.#xPosition = this.#xPosition + 10
+        this.#xPos = this.#xPos + Laser.speed
+        break
+      case 'top':
+        this.#yPos = this.#yPos - Laser.speed
+        break
+      case 'bottom':
+        this.#yPos = this.#yPos + Laser.speed
+        break
       default:
         break
     }
+
+    if (this.#xPos >= this.canvasWidth || this.#yPos >= this.canvasHeight || this.#xPos + 30 <= 0 || this.#yPos + 30 <= 0) Laser.clearFunc(this.#id)
   }
+
+
+  /**
+   * @param { number } cx Circle center x
+   * @param { number } cy Circle center y
+   * @param { number } r Circle radius 
+   * @returns { boolean }
+   */
+  collisionWithCircle(cx, cy, r) {
+    let px = this.canvasHalfWidth
+    let py = this.canvasHalfHeight
+
+    if (this.#position === 'top' || this.#position === 'bottom') {
+      py = this.#position === 'top' ? this.#yPos + 5 : this.#yPos + 25
+    } else {
+      px = this.#position === 'left' ? this.#xPos + 5 : this.#xPos + 25
+    }
+
+    const distX = px - cx
+    const distY = py - cy
+    const distance = Math.sqrt( (distX * distX) + (distY * distY) )
+
+    if (distance <= r) {
+      Laser.clearFunc(this.#id)
+      return true
+    }
+
+    return false
+  }
+
+
+  coordinates() {
+    return { position: this.#position, x: this.#xPos, y: this.#yPos }
+  }
+
 
   draw() {
-    if (this.#position === 'left' || this.#position === 'right') {
-      Laser.context.drawImage(this.#laserImage, 0, 300, 300, 100, this.#xPosition, this.#yPosition, 30, 10)
-    } else {
-      Laser.context.drawImage(this.#laserImage, 0, 0, 100, 300, this.#xPosition, this.#yPosition, 10, 30)
-    }
+    this.#position === 'left' || this.#position === 'right' 
+      ? super.ctx.drawImage(this.#image, 0, 300, 300, 100, this.#xPos, this.#yPos, 30, 10)
+      : super.ctx.drawImage(this.#image, 0, 0, 100, 300, this.#xPos, this.#yPos, 10, 30)
+    
+    
+    this._updatePosition()
   }
 }
 

@@ -1,162 +1,66 @@
-class Satellite {
-  static context
-  static mainSprite = './images/satellite.png'
-  static sphereSprite = './images/satelliteSphere.png'
-  static explosionSprite = './images/satelliteExplode.png'
-  static thunderSprite = './images/thunder.png'
-  static mainImage = new Image()
-  static sphereImage = new Image()
-  static explosionImage = new Image()
-  static thunderImage = new Image()
+import GameObject from './GameObject.js'
+
+class Satellite extends GameObject {
   static lastAngle = 46
   static radius = 250
   static importantAngles = [0, 90 , 180, 270]
   static finishFunc
   static damageFunc
   static shootAngles = {
-    45: 'bottomRight',
-    135: 'bottomLeft',
-    225: 'topLeft',
-    315: 'topRight'
+    45: { thunderAnimationY: 560, thunderX: 543, thunderY: 396 },
+    135: { thunderAnimationY: 840, thunderX: 313, thunderY: 396 },
+    225: { thunderAnimationY: 0, thunderX: 313, thunderY: 163 },
+    315: { thunderAnimationY: 280, thunderX: 543, thunderY: 163 },
   }
-
-  #angle
-  #coreInterval
-  #mainInterval
-  #thunderInterval
-  #coreAnimationX = 0
-  #coreAnimationY = 0
-  #mainAnimationX = 0
-  #mainAnimationY = 0
-  #thunderAnimationX = 0
-  #thunderAnimationY = 0
-  #thunderX = 0
-  #thunderY = 0
-  #xPos
-  #yPos
-  #destroyed = false
-  #shoot = false
-  #movingSound = new Audio('./sounds/sputnik.mp3')
-  #thunderSound = new Audio('./sounds/thunder.mp3')
-
-  /**
-   * Convert degrees to radians
-   * @param { number } deg 
-   * @returns { number }
-   */
   static degrees (deg) {
     return deg * 0.0174532925
+  }
+
+  #mainImage = this._createImage('./images/satellite.png')
+  #coreImage = this._createImage('./images/satelliteSphere.png')
+  #explosionImage = this._createImage('./images/satelliteExplode.png')
+  #thunderImage = this._createImage('./images/thunder.png')
+  #destroyed = false
+  #shoot = false
+  #angle
+  #xPos
+  #yPos
+  #thunderX = 0
+  #thunderY = 0
+  #mainAnimationX = 0
+  #mainAnimationY = 0
+  #coreAnimationX = 0
+  #coreAnimationY = 0
+  #thunderAnimationX = 0
+  #thunderAnimationY = 0
+  #animationInterval
+  #thunderInterval
+
+  get destroyed() {
+    return this.#destroyed
   }
 
 
   /**
    * @param { HTMLCanvasElement } canvas 
-   * @param { Function } finishFunc
    * @param { Function } damageFunc
+   * @param { Function } finishFunc
    */
-  constructor (canvas, finishFunc, damageFunc) {
-    Satellite.context = canvas.getContext('2d')
-    Satellite.mainImage.src = Satellite.mainSprite
-    Satellite.sphereImage.src = Satellite.sphereSprite
-    Satellite.explosionImage.src = Satellite.explosionSprite
-    Satellite.thunderImage.src = Satellite.thunderSprite
-    Satellite.finishFunc = finishFunc
+  constructor (canvas, damageFunc, finishFunc) {
+    super(canvas)
     Satellite.damageFunc = damageFunc
-
-    this.#movingSound.loop = true
-    this.#movingSound.currentTime = 0
-    this.#movingSound.play()
+    Satellite.finishFunc = finishFunc
 
     this.#angle = Satellite.lastAngle
-    this.#coreInterval = setInterval(() => this.updateCore(), 100)
-    this.#mainInterval = setInterval(() => this.updateMain(), 100)
+
+    this.#animationInterval = setInterval(() => {
+      this._animateMain()
+      this._animateCore()
+    }, 100)
   }
 
 
-  draw () {
-    if (this.#destroyed === false) {
-      if (Object.keys(Satellite.shootAngles).map(Number).includes(this.#angle)) {
-        switch (this.#angle) {
-          case 45:
-            this.#thunderAnimationY = 560
-            this.#thunderX = 543
-            this.#thunderY = 396
-            this.#thunderSound.currentTime = 0.5
-            this.#thunderSound.play()
-            break
-          case 135:
-            this.#thunderAnimationY = 840
-            this.#thunderX = 313
-            this.#thunderY = 396
-            this.#thunderSound.currentTime = 0.5
-            this.#thunderSound.play()
-          break
-          case 225:
-            this.#thunderAnimationY = 0
-            this.#thunderX = 313
-            this.#thunderY = 163
-            this.#thunderSound.currentTime = 0.5
-            this.#thunderSound.play()
-            break
-          case 315:
-            this.#thunderAnimationY = 280
-            this.#thunderX = 543
-            this.#thunderY = 163
-            this.#thunderSound.currentTime = 0.5
-            this.#thunderSound.play()
-            break
-          default:
-            break;
-        }
-
-
-        if (this.#shoot === false) {
-          this.#shoot = true
-          this.#thunderInterval = setInterval(() => this.generateThunder(), 40)
-        }
-      } else {
-        this.#angle = this.#angle >= 359 ? 0 : this.#angle + 1
-      }
-    }
-
-    if (Satellite.importantAngles.includes(this.#angle)) Satellite.lastAngle = this.#angle + 46
-
-    this.#xPos = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius + 465
-    this.#yPos = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius + 315
-
-    const coreX = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius
-    const coreY = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius
-
-    if (this.#shoot) {
-      Satellite.context.drawImage(Satellite.thunderImage, this.#thunderAnimationX, this.#thunderAnimationY, 280, 280, this.#thunderX, this.#thunderY, 123, 123)
-    }
-
-    if (this.#destroyed) {
-      Satellite.context.drawImage(Satellite.explosionImage, this.#mainAnimationX, 0, 192, 192, this.#xPos - 50, this.#yPos - 50, 150, 150)
-    } else {
-      Satellite.context.drawImage(Satellite.mainImage, this.#mainAnimationX, this.#mainAnimationY, 300, 300, this.#xPos, this.#yPos, 50, 50)
-      Satellite.context.drawImage(Satellite.sphereImage, this.#coreAnimationX, this.#coreAnimationY, 280, 280, coreX + 490 - 12.5 , coreY + 340 - 12.5, 25, 25)
-    }
-  }
-
-
-  updateCore () {
-    if (this.#coreAnimationX === 1680 && this.#coreAnimationY === 840) {
-      this.#coreAnimationX = 0
-      this.#coreAnimationY = 0
-    } else if (this.#coreAnimationX === 1680) {
-      this.#coreAnimationY < 840
-        ? this.#coreAnimationY = this.#coreAnimationY + 280
-        : this.#coreAnimationY = 0
-      
-      this.#coreAnimationX = 0
-    } else {
-      this.#coreAnimationX = this.#coreAnimationX + 280
-    }
-  }
-
-
-  updateMain () {
+  _animateMain() {
     if (this.#mainAnimationX === 900 && this.#mainAnimationY === 1200) {
       this.#mainAnimationX = 0
       this.#mainAnimationY = 0
@@ -172,26 +76,41 @@ class Satellite {
   }
 
 
-  generateExplosion () {
-    if (this.#mainAnimationX === 768) {
-      clearInterval(this.#mainInterval)
-      setTimeout(() => Satellite.finishFunc(), 1000)
+  _animateCore() {
+    if (this.#coreAnimationX === 1680 && this.#coreAnimationY === 840) {
+      this.#coreAnimationX = 0
+      this.#coreAnimationY = 0
+    } else if (this.#coreAnimationX === 1680) {
+      this.#coreAnimationY < 840
+        ? this.#coreAnimationY = this.#coreAnimationY + 280
+        : this.#coreAnimationY = 0
+      
+      this.#coreAnimationX = 0
     } else {
-      this.#mainAnimationX = this.#mainAnimationX + 192
+      this.#coreAnimationX = this.#coreAnimationX + 280
     }
   }
 
 
-  generateThunder () {
+  _generateThunder () {
     if (this.#thunderAnimationX === 1960) {
       clearInterval(this.#thunderInterval)
       this.#thunderAnimationX = 0
       this.#shoot = false
-      Satellite.damageFunc(Satellite.shootAngles[this.#angle])
+      Satellite.damageFunc(this.#angle)
       this.#angle = this.#angle + 1
-      // this.#thunderSound.pause()
     } else {
       this.#thunderAnimationX = this.#thunderAnimationX + 280
+    }
+  }
+
+
+  _explode () {
+    if (this.#mainAnimationX === 768) {
+      clearInterval(this.#animationInterval)
+      setTimeout(() => Satellite.finishFunc(), 1000)
+    } else {
+      this.#mainAnimationX = this.#mainAnimationX + 192
     }
   }
 
@@ -201,21 +120,71 @@ class Satellite {
   }
 
 
-  destroy () {
-    this.#movingSound.pause()
+  destroy() {
     this.#destroyed = true
-    clearInterval(this.#coreInterval)
-    clearInterval(this.#mainInterval)
+    clearInterval(this.#animationInterval)
     this.#mainAnimationX = 0
-    this.#mainInterval = setInterval(() => this.generateExplosion(), 150)
+    this.#animationInterval = setInterval(() => this._explode(), 150)
   }
 
-  clean () {
-    this.#movingSound.pause()
-    this.#destroyed = true
-    clearInterval(this.#coreInterval)
-    clearInterval(this.#mainInterval)
-    this.#mainAnimationX = 0
+
+  clean() {
+    clearInterval(this.#animationInterval)
+  }
+
+
+  pause() {
+    clearInterval(this.#animationInterval)
+    if (this.#shoot === true) clearInterval(this.#thunderInterval)
+  }
+
+
+  unpause() {
+    if (this.#destroyed) {
+      this.#animationInterval = setInterval(() => this._explode(), 150)
+    } else {
+      this.#animationInterval = setInterval(() => {
+        this._animateMain()
+        this._animateCore()
+      }, 100)
+      
+      if (this.#shoot === true) this.#thunderInterval = setInterval(() => this._generateThunder(), 40)
+    }
+  }
+
+
+  draw() {
+    if (!this.#destroyed && Object.keys(Satellite.shootAngles).map(Number).includes(this.#angle)) {
+      this.#thunderAnimationY = Satellite.shootAngles[this.#angle].thunderAnimationY
+      this.#thunderX = Satellite.shootAngles[this.#angle].thunderX
+      this.#thunderY = Satellite.shootAngles[this.#angle].thunderY
+
+      if (this.#shoot === false) {
+        this.#shoot = true
+        this.#thunderInterval = setInterval(() => this._generateThunder(), 40)
+      }
+    } else if (!this.#destroyed) {
+      this.#angle = this.#angle >= 359 ? 0 : this.#angle + 1
+    }
+
+    if (Satellite.importantAngles.includes(this.#angle)) Satellite.lastAngle = this.#angle + 46
+
+    this.#xPos = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius + 465
+    this.#yPos = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius + 315
+
+    const coreX = Math.cos(Satellite.degrees(this.#angle)) * Satellite.radius
+    const coreY = Math.sin(Satellite.degrees(this.#angle)) * Satellite.radius
+
+    if (this.#shoot) {
+      this.ctx.drawImage(this.#thunderImage, this.#thunderAnimationX, this.#thunderAnimationY, 280, 280, this.#thunderX, this.#thunderY, 123, 123)
+    }
+
+    if (this.#destroyed) {
+      this.ctx.drawImage(this.#explosionImage, this.#mainAnimationX, 0, 192, 192, this.#xPos - 50, this.#yPos - 50, 150, 150)
+    } else {
+      this.ctx.drawImage(this.#mainImage, this.#mainAnimationX, this.#mainAnimationY, 300, 300, this.#xPos, this.#yPos, 50, 50)
+      this.ctx.drawImage(this.#coreImage, this.#coreAnimationX, this.#coreAnimationY, 280, 280, coreX + 490 - 12.5 , coreY + 340 - 12.5, 25, 25)
+    }
   }
 }
 

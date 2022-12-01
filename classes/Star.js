@@ -1,22 +1,22 @@
-class Star {
-  static context
-  static sprite = './images/star.png'
-  static starImage = new Image()
+import GameObject from './GameObject.js'
 
+class Star extends GameObject {
+  #image = super._createImage('./images/star.png')
   #xPos
   #yPos
   #animationX
   #animationY
 
   /**
-   * @param { HTMLCanvasElement } canvas
+   * @param { HTMLCanvasElement } canvas 
+   * @param { number } xPos 
+   * @param { number } yPos 
    */
   constructor(canvas, xPos, yPos) {
-    Star.context = canvas.getContext('2d')
-    Star.starImage.src = Star.sprite
-    this.#animationX = Math.floor(Math.random() * (9 - 1) + 1) * 50
-    this.#animationY = Math.floor(Math.random() * (4 - 1) + 1) * 50 - 50
+    super(canvas)
 
+    this.#animationX = super._randomBetween(9, 1) * 50
+    this.#animationY = super._randomBetween(4, 1) * 50 - 50
     this.#xPos = xPos
     this.#yPos = yPos
 
@@ -24,7 +24,7 @@ class Star {
   }
 
   draw() {
-    Star.context.drawImage(Star.starImage, this.#animationX, this.#animationY, 50, 50, this.#xPos, this.#yPos, 7, 7)
+    this.ctx.drawImage(this.#image, this.#animationX, this.#animationY, 50, 50, this.#xPos, this.#yPos, 7, 7)
   }
 
   animation() {
