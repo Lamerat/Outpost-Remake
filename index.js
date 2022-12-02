@@ -148,6 +148,8 @@ const newGame = () => {
   score = 0
   level = 0
   lasers = []
+  bombs = []
+  explosions = []
   ship = new Ship(canvas, createLaser, shipDestroy, false)
   changeLevel()
 }
